@@ -91,6 +91,7 @@ internal static class Program
 
         Main mainForm = new Main();
         SplashScreen splashScreen = new SplashScreen(mainForm);
+        //RSBot.Core.BotCL.Initialize(ProfileManager.SelectedProfile, GlobalConfig.Get<string>("RSBot.SilkroadDirectory"));
         splashScreen.ShowDialog();
 
         Application.Run(mainForm);

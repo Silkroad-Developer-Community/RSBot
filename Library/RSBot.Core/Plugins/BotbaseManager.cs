@@ -24,6 +24,7 @@ public class BotbaseManager
     ///     The extensions.
     /// </value>
     public Dictionary<string, IBotbase> Bots { get; private set; }
+    public Dictionary<string, IBotbaseView> BotsViews { get; private set; }
 
     /// <summary>
     ///     Loads the assemblies.
@@ -36,20 +37,23 @@ public class BotbaseManager
         try
         {
             Bots = new Dictionary<string, IBotbase>();
+            BotsViews = new Dictionary<string, IBotbaseView>();
 
-            foreach (
-                var extension in from file in Directory.GetFiles(DirectoryPath)
-                let fileInfo = new FileInfo(file)
-                where fileInfo.Extension == ".dll"
-                select GetExtensionsFromAssembly(file) into loadedExtensions
-                from extension in loadedExtensions
-                select extension
-            )
+            foreach (var file in Directory.GetFiles(DirectoryPath, "*.dll"))
             {
-                Bots.Add(extension.Key, extension.Value);
-                extension.Value.Register();
+                var result = GetExtensionsFromAssembly(file);
 
-                Log.Debug($"Loaded botbase [{extension.Value.Name}]");
+                foreach (var bot in result.bots)
+                {
+                    Bots[bot.Key] = bot.Value;
+                    bot.Value.Register();
+                }
+
+                foreach (var view in result.views)
+                {
+                    BotsViews[view.Key] = view.Value;
+                    Log.Debug($"Loaded botbase [{view.Value.Name}]");
+                }
             }
 
             EventManager.FireEvent("OnLoadBotbases");
@@ -71,9 +75,10 @@ public class BotbaseManager
     /// </summary>
     /// <param name="file">The file.</param>
     /// <returns></returns>
-    private static Dictionary<string, IBotbase> GetExtensionsFromAssembly(string file)
+    private static (Dictionary<string, IBotbase> bots, Dictionary<string, IBotbaseView> views) GetExtensionsFromAssembly(string file)
     {
-        var result = new Dictionary<string, IBotbase>();
+        var bots = new Dictionary<string, IBotbase>();
+        var views = new Dictionary<string, IBotbaseView>();
 
         var assembly = Assembly.LoadFrom(file);
 
@@ -81,20 +86,28 @@ public class BotbaseManager
         {
             var types = assembly.GetTypes();
 
-            foreach (
-                var extension in (
-                    from type in types
-                    where type.IsPublic && !type.IsAbstract && type.GetInterface("IBotbase") != null
-                    select Activator.CreateInstance(type)
-                ).OfType<IBotbase>()
-            )
-                result.Add(extension.Name, extension);
+            foreach (var type in types.Where(t => t.IsPublic && !t.IsAbstract))
+            {
+                bool isBot = type.GetInterface(nameof(IBotbase)) != null;
+                bool isView = type.GetInterface(nameof(IBotbaseView)) != null;
+
+                if (isBot || isView)
+                {
+                    var instance = Activator.CreateInstance(type);
+
+                    if (instance is IBotbase bot)
+                        bots.Add(bot.Name, bot);
+
+                    if (instance is IBotbaseView view)
+                        views.Add(view.Name, view);
+                }
+            }
         }
         catch
         {
             /* ignore, it's an invalid botbase */
         }
 
-        return result;
+        return (bots, views);
     }
 }

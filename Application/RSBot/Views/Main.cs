@@ -169,6 +169,7 @@ public partial class Main : UIWindow
         var previousSelectedIndex = windowPageControl.SelectedIndex;
 
         var newBotbase = Kernel.BotbaseManager.Bots.FirstOrDefault(bot => bot.Value.Name == name);
+        var newBotbaseView = Kernel.BotbaseManager.BotsViews.FirstOrDefault(bot => bot.Value.Name == name);
         if (newBotbase.Value == null)
         {
             Log.Error($"Botbase [{name}] could not be found!");
@@ -176,11 +177,11 @@ public partial class Main : UIWindow
             return;
         }
 
-        newBotbase.Value.Translate();
+        newBotbaseView.Value.Translate();
 
-        var control = newBotbase.Value.View;
-        control.Name = newBotbase.Value.Name;
-        control.Text = LanguageManager.GetLangBySpecificKey(newBotbase.Value.Name, "TabText", newBotbase.Value.TabText);
+        var control = newBotbaseView.Value.View;
+        control.Name = newBotbaseView.Value.Name;
+        control.Text = LanguageManager.GetLangBySpecificKey(newBotbaseView.Value.Name, "TabText", newBotbaseView.Value.TabText);
         control.Enabled = Game.Ready;
         windowPageControl.Controls.Add(control);
 
@@ -229,7 +230,7 @@ public partial class Main : UIWindow
             plugin.Initialize();
 
         var extensions = Kernel
-            .PluginManager.Extensions.OrderBy(entry => entry.Value.Index)
+            .PluginManager.ExtensionsViews.OrderBy(entry => entry.Value.Index)
             .ToDictionary(x => x.Key, x => x.Value);
 
         foreach (var extension in extensions.Where(extension => extension.Value.DisplayAsTab))
@@ -311,7 +312,7 @@ public partial class Main : UIWindow
     private void PluginMenuItem_Click(object sender, EventArgs e)
     {
         var menuItem = (ToolStripMenuItem)sender;
-        var plugin = (IPlugin)menuItem.Tag;
+        var plugin = (IPluginView)menuItem.Tag;
         var content = plugin.View;
 
         if (content == null)
@@ -445,7 +446,7 @@ public partial class Main : UIWindow
         foreach (ToolStripMenuItem item in languageToolStripMenuItem.DropDownItems)
             item.Checked = false;
 
-        foreach (var plugin in Kernel.PluginManager.Extensions)
+        foreach (var plugin in Kernel.PluginManager.ExtensionsViews)
         {
             plugin.Value.Translate();
 
@@ -456,15 +457,15 @@ public partial class Main : UIWindow
             tabpage.Text = LanguageManager.GetLangBySpecificKey(plugin.Key, "DisplayName", tabpage.Text);
         }
 
-        foreach (var botbase in Kernel.BotbaseManager.Bots)
+        foreach (var botbaseview in Kernel.BotbaseManager.BotsViews)
         {
-            botbase.Value.Translate();
+            botbaseview.Value.Translate();
 
-            if (!windowPageControl.Controls.ContainsKey(botbase.Key))
+            if (!windowPageControl.Controls.ContainsKey(botbaseview.Key))
                 continue;
 
-            var tabpage = windowPageControl.Controls[botbase.Key];
-            tabpage.Text = LanguageManager.GetLangBySpecificKey(botbase.Key, "DisplayName", tabpage.Text);
+            var tabpage = windowPageControl.Controls[botbaseview.Key];
+            tabpage.Text = LanguageManager.GetLangBySpecificKey(botbaseview.Key, "DisplayName", tabpage.Text);
         }
 
         LanguageManager.Translate(this, Kernel.Language);
@@ -506,7 +507,7 @@ public partial class Main : UIWindow
         }
         else
         {
-            Log.NotifyLang("StopingBot", Kernel.Bot.Botbase.DisplayName);
+            Log.NotifyLang("StopingBot", Kernel.Bot.BotbaseView.DisplayName);
 
             Kernel.Bot.Stop();
             Log.StatusLang("Ready");
@@ -766,7 +767,7 @@ public partial class Main : UIWindow
     {
         pyPluginsToolStripMenuItem.Checked = !pyPluginsToolStripMenuItem.Checked;
         GlobalConfig.Set("RSBot.ShowPythonPlugins", pyPluginsToolStripMenuItem.Checked.ToString());
-        foreach( var plugin in Kernel.PluginManager.Extensions.Values)
+        foreach( var plugin in Kernel.PluginManager.ExtensionsViews.Values)
         {
             if (plugin.InternalName == "RSBot.Python")
             {
@@ -828,7 +829,7 @@ public partial class Main : UIWindow
                 Environment.Exit(-1);
         }
 
-        foreach (var bot in Kernel.BotbaseManager.Bots)
+        foreach (var bot in Kernel.BotbaseManager.BotsViews)
         {
             var item = new ToolStripMenuItem { Name = bot.Value.Name, Text = bot.Value.DisplayName };
             item.Click += Item_Click;

@@ -507,7 +507,7 @@ public partial class Main : UIWindow
         }
         else
         {
-            Log.NotifyLang("StopingBot", Kernel.Bot.BotbaseView.DisplayName);
+            Log.NotifyLang("StopingBot", Kernel.Bot.BotbaseView?.DisplayName);
 
             Kernel.Bot.Stop();
             Log.StatusLang("Ready");

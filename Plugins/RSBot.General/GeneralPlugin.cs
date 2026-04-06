@@ -9,14 +9,12 @@ namespace RSBot.General
         public static GeneralPlugin Instance { get; private set; }
         public GeneralManager Manager { get; private set; }
 
-        /// <inheritdoc />
         public void Initialize()
         {
             Instance = this;
             Manager = new GeneralManager();
             Accounts.Load();
         }
-        /// <inheritdoc />
         public void OnLoadCharacter() { }
     }
 }

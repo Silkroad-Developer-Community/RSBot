@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
-using RSBot.Core;
 using RSBot.Core.Event;
 using RSBot.Core.Objects;
 using SDUI.Controls;
@@ -20,6 +19,7 @@ public partial class Main : DoubleBufferedControl
     }
     private void SubscribeEvents()
     {
+        EventManager.SubscribeEvent("OnMessageReceived", AppendMessage);
     }
     /// <summary>
     ///     Sends the chat message.

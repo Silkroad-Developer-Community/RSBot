@@ -117,7 +117,7 @@ internal class AttributeBundle : IAlchemyBundle
     /// <param name="type"></param>
     private void OnFuseRequest(AlchemyAction action, AlchemyType type)
     {
-        if (type != AlchemyType.AttributeStone || !Bootstrap.IsActive)
+        if (type != AlchemyType.AttributeStone || !AlchemyBase.IsActive)
             return;
 
         _shouldRun = false;
@@ -128,7 +128,7 @@ internal class AttributeBundle : IAlchemyBundle
     /// </summary>
     private void OnStoneAlchemy(AlchemyType type)
     {
-        if (type != AlchemyType.AttributeStone || !Bootstrap.IsActive)
+        if (type != AlchemyType.AttributeStone || !AlchemyBase.IsActive)
             return;
 
         _shouldRun = true;
@@ -142,7 +142,7 @@ internal class AttributeBundle : IAlchemyBundle
     /// <param name="type"></param>
     private void OnStoneAlchemySuccess(InventoryItem oldItem, InventoryItem newItem, AlchemyType type)
     {
-        if (type != AlchemyType.AttributeStone || !Bootstrap.IsActive)
+        if (type != AlchemyType.AttributeStone || !AlchemyBase.IsActive)
             return;
 
         var changedAttributeSlots = oldItem.Attributes.CompareSlots(newItem.Attributes);
@@ -169,7 +169,7 @@ internal class AttributeBundle : IAlchemyBundle
     /// <param name="type"></param>
     private void OnStoneAlchemyFailed(InventoryItem oldItem, InventoryItem newItem, AlchemyType type)
     {
-        if (type != AlchemyType.AttributeStone || !Bootstrap.IsActive)
+        if (type != AlchemyType.AttributeStone || !AlchemyBase.IsActive)
             return;
 
         Globals.View.AddLog(
@@ -187,7 +187,7 @@ internal class AttributeBundle : IAlchemyBundle
     /// <param name="type"></param>
     private void OnStoneAlchemyError(ushort errorCode, AlchemyType type)
     {
-        if (type != AlchemyType.AttributeStone || !Bootstrap.IsActive)
+        if (type != AlchemyType.AttributeStone || !AlchemyBase.IsActive)
             return;
 
         _shouldRun = true;

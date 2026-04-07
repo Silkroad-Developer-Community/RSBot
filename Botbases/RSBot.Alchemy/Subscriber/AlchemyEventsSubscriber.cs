@@ -19,7 +19,7 @@ internal class AlchemyEventsSubscriber
 
     private static void OnAlchemyDestroyed(InventoryItem oldItem, AlchemyType type)
     {
-        if (!Bootstrap.IsActive)
+        if (!AlchemyBase.IsActive)
             return;
 
         Globals.Botbase.EnhanceBundleConfig = null;
@@ -37,7 +37,7 @@ internal class AlchemyEventsSubscriber
 
     private static void OnAlchemyError(ushort errorCode, AlchemyType type)
     {
-        if (!Bootstrap.IsActive)
+        if (!AlchemyBase.IsActive)
             return;
 
         if (errorCode is 0x5423)

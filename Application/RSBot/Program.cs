@@ -44,7 +44,7 @@ internal static class Program
 
         [Option("launch-clientless", Required = false, HelpText = "Start clientless")]
         public bool LaunchClientless { get; set; }
-        [Option('h', "headless", Required = false, HelpText = "Start the bot without graphical user interface.")]
+        [Option('h', "headless", Required = false, HelpText = "Start the bot without graphical user interface")]
         public bool Headless { get; set; }
     }
 

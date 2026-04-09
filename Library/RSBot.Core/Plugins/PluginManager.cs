@@ -30,12 +30,12 @@ public class PluginManager
     /// <summary>
     ///     Loads the assemblies.
     /// </summary>
-    public bool LoadAssemblies()
+    public bool LoadAssemblies(bool isHeadless = false)
     {
         if (Extensions != null)
             return false;
 
-        Extensions = new Dictionary<string, IPlugin>();
+        Extensions = new Dictionary<string, IPlugin>();        
         ExtensionsViews = new Dictionary<string, IPluginView>();
 
         try
@@ -52,13 +52,15 @@ public class PluginManager
                         Extensions.Add(plugin.Key, plugin.Value);
                     }
                 }
-
-                foreach (var view in views)
+                if (!isHeadless)
                 {
-                    if (!ExtensionsViews.ContainsKey(view.Key))
+                    foreach (var view in views)
                     {
-                        ExtensionsViews.Add(view.Key, view.Value);
-                        Log.Debug($"Loaded view [{view.Value.InternalName}]");
+                        if (!ExtensionsViews.ContainsKey(view.Key))
+                        {
+                            ExtensionsViews.Add(view.Key, view.Value);
+                            Log.Debug($"Loaded view [{view.Value.InternalName}]");
+                        }
                     }
                 }
             }

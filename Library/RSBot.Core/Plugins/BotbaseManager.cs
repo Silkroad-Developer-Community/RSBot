@@ -29,7 +29,7 @@ public class BotbaseManager
     /// <summary>
     ///     Loads the assemblies.
     /// </summary>
-    public bool LoadAssemblies()
+    public bool LoadAssemblies(bool isHeadless = false)
     {
         if (Bots != null)
             return false;
@@ -49,10 +49,13 @@ public class BotbaseManager
                     bot.Value.Register();
                 }
 
-                foreach (var view in result.views)
+                if (!isHeadless)
                 {
-                    BotsViews[view.Key] = view.Value;
-                    Log.Debug($"Loaded botbase [{view.Value.Name}]");
+                    foreach (var view in result.views)
+                    {
+                        BotsViews[view.Key] = view.Value;
+                        Log.Debug($"Loaded botbase [{view.Value.Name}]");
+                    }
                 }
             }
 

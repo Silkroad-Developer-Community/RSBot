@@ -2,5 +2,6 @@
 {
     public class PartyManager
     {
+        public PartyManager() { }
     }
 }

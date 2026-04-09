@@ -1,4 +1,5 @@
 ﻿using RSBot.Core.Plugins;
+using RSBot.Party.Bundle;
 using RSBot.Party.Subscribers;
 
 namespace RSBot.Party

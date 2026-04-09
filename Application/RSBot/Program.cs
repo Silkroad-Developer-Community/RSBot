@@ -114,7 +114,7 @@ internal static class Program
     }
     private static void RunHeadless()
     {
-        Main mainForm = new Main();
+        //Main mainForm = new Main();
         BotCL.Initialize(ProfileManager.SelectedProfile);
 
         EventManager.FireEvent("OnLoadPlugins");

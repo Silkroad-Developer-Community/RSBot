@@ -2,11 +2,9 @@
 using RSBot.Core.Components;
 using RSBot.Core.Event;
 using RSBot.General.Components;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace RSBot.General
 {
@@ -14,6 +12,8 @@ namespace RSBot.General
     {
         private bool _clientVisible;
         private static int _reloginSeq;
+        public static bool IsClientless => Game.Clientless && Kernel.Proxy != null && Kernel.Proxy.IsConnectedToAgentserver;
+        public static bool IsConnected => Kernel.Proxy != null && Kernel.Proxy.IsConnectedToAgentserver;
         public GeneralManager()
         {
             SubscribeEvents();
@@ -49,18 +49,13 @@ namespace RSBot.General
             if (Game.Clientless)
                 return;
 
-            // If user disconnected with manual from clientless, we dont need open the client automatically again.
-            //if (!Kernel.Proxy.ClientConnected)
-            //return;
-
             ClientManager.Kill();
 
             if (GlobalConfig.Get<bool>("RSBot.General.EnableAutomatedLogin"))
             {
                 var reloginSeq = Interlocked.Increment(ref _reloginSeq);
 
-                EventManager.FireEvent("OnBtnStartClientChanged", false);
-                EventManager.FireEvent("OnBtnStartClientlessChanged", false);
+                EventManager.FireEvent("OnAutoReloginStarted");
 
                 int delay = 10000;
                 if (GlobalConfig.Get("RSBot.General.EnableWaitAfterDC", false))
@@ -82,9 +77,7 @@ namespace RSBot.General
                 await StartClientProcess();
                 return;
             }
-            EventManager.FireEvent("OnBtnGoClientlessChanged", false);
-            EventManager.FireEvent("OnBtnStartClientChanged", true);
-            EventManager.FireEvent("OnBtnStartClientlessChanged", true);
+            EventManager.FireEvent("OnClientDisconnected");
         }
         private async void OnGatewayServerDisconnected()
         {
@@ -99,8 +92,7 @@ namespace RSBot.General
                 {
                     var reloginSeq = Interlocked.Increment(ref _reloginSeq);
 
-                    EventManager.FireEvent("OnBtnStartClientChanged", false);
-                    EventManager.FireEvent("OnBtnStartClientlessChanged", false);
+                    EventManager.FireEvent("OnAutoReloginStarted");
 
                     // Gateway disconnect can happen briefly during Gateway -> Agent switch (or the switch can start late
                     // due to thread scheduling). Give it a short grace period before we decide it's a real DC.
@@ -112,9 +104,8 @@ namespace RSBot.General
                     if (Kernel.Proxy.IsConnectedToAgentserver || Kernel.Proxy.IsSwitchingToAgentserver)
                         return;
 
-                    EventManager.FireEvent("OnBtnStartClientChanged", true);
-                    EventManager.FireEvent("OnBtnStartClientlessChanged", true);
-                    EventManager.FireEvent("OnBtnStartClientTextChanged", LanguageManager.GetLang("Start") + " Clientless");
+                    EventManager.FireEvent("OnAutoReloginOngoing");
+
                     Log.StatusLang("Ready");
                     Kernel.Proxy.Shutdown();
 
@@ -152,9 +143,7 @@ namespace RSBot.General
                     return;
                 }
 
-                EventManager.FireEvent("OnBtnStartClientChanged", true);
-                EventManager.FireEvent("OnBtnStartClientlessChanged", true);
-                EventManager.FireEvent("OnBtnStartClientTextChanged", LanguageManager.GetLang("Start") + " Clientless");
+                EventManager.FireEvent("OnClientDisconnected");
 
                 Log.StatusLang("Ready");
                 Kernel.Proxy.Shutdown();
@@ -164,15 +153,6 @@ namespace RSBot.General
         }
         private async void OnEnterGame()
         {
-            if (!Game.Clientless)
-            {
-                EventManager.FireEvent("OnBtnClientHideShowChanged", true);
-                EventManager.FireEvent("OnBtnClientHideShowTextChanged", LanguageManager.GetLang("Hide") + " Client");
-                EventManager.FireEvent("OnBtnStartClientChanged", true);
-                EventManager.FireEvent("OnBtnStartClientTextChanged", LanguageManager.GetLang("Kill") + " Client");
-                EventManager.FireEvent("OnBtnGoClientlessChanged", true);
-            }
-
             while (!Game.Ready)
                 await Task.Delay(100);
 
@@ -189,14 +169,9 @@ namespace RSBot.General
         {
             Log.StatusLang("Ready");
             _clientVisible = false;
-            EventManager.FireEvent("OnBtnStartClientTextChanged", LanguageManager.GetLang("Start") + " Client");
 
             if (Game.Clientless)
                 return;
-
-            EventManager.FireEvent("OnBtnStartClientChanged", true);
-            EventManager.FireEvent("OnBtnStartClientlessChanged", true);
-            EventManager.FireEvent("OnBtnClientHideShowChanged", false);
 
             if (!GlobalConfig.Get<bool>("RSBot.General.StayConnected"))
             {
@@ -207,12 +182,10 @@ namespace RSBot.General
                 if (!Kernel.Proxy.IsConnectedToAgentserver)
                     return;
 
-                EventManager.FireEvent("OnBtnStartClientChanged", false);
 
                 ClientlessManager.GoClientless();
 
-                EventManager.FireEvent("OnBtnGoClientlessChanged", false);
-                EventManager.FireEvent("OnBtnStartClientlessTextChanged", LanguageManager.GetLang("Disconnect"));
+                EventManager.FireEvent("OnSwitchToClientless");
 
                 Log.NotifyLang("ClientlessModeActivated");
             }
@@ -223,7 +196,7 @@ namespace RSBot.General
         }
         private async Task StartClientProcess()
         {
-            EventManager.FireEvent("OnBtnStartClientChanged", false);
+            EventManager.FireEvent("OnClientProcessStarted");
             Game.Start();
 
             await Task.Run(async () =>
@@ -236,60 +209,20 @@ namespace RSBot.General
                 }
             });
         }
-        public static void BrowseSilkroadPath()
+        public static void ChangeSilkroadPath(string path)
         {
-            using (var dialog = new OpenFileDialog())
-            {
-                var title = LanguageManager.GetLang("BrowseSilkroadPathDialogTitle");
-
-                var msgBoxTitle = LanguageManager.GetLang("BrowseSilkroadPathMsgBoxTitle");
-                var msgBoxContent = LanguageManager.GetLang("BrowseSilkroadPathMsgBoxContent");
-
-                dialog.Title = title;
-                dialog.Filter = "App (*.exe)|*.exe";
-                dialog.FileName = "sro_client.exe";
-
-                var result = dialog.ShowDialog();
-                if (result != DialogResult.OK)
-                    return;
-
-                EventManager.FireEvent("OnTxtSilkroadPathChanged", dialog.FileName);
-                GlobalConfig.Set("RSBot.SilkroadDirectory", Path.GetDirectoryName(dialog.FileName));
-                GlobalConfig.Set("RSBot.SilkroadExecutable", Path.GetFileName(dialog.FileName));
-
-                result = MessageBox.Show(msgBoxContent, msgBoxTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-                if (result == DialogResult.No)
-                    return;
-
-                GlobalConfig.Save();
-            }
-
-            Process.Start(Application.ExecutablePath);
-            Application.Exit();
+            GlobalConfig.Set("RSBot.SilkroadDirectory", Path.GetDirectoryName(path));
+            GlobalConfig.Set("RSBot.SilkroadExecutable", Path.GetFileName(path));
         }
         public static void GoClientless()
         {
             if (Game.Clientless)
                 return;
 
-            var msgBoxTitle = LanguageManager.GetLang("GoClientlessMsgBoxTitle");
-            var msgBoxContent = LanguageManager.GetLang("GoClientlessMsgBoxContent");
-
-            if (
-                MessageBox.Show(msgBoxContent, msgBoxTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
-                != DialogResult.Yes
-            )
-                return;
-
             ClientlessManager.GoClientless();
             ClientManager.Kill();
 
-            EventManager.FireEvent("OnBtnStartClientlessTextChanged", LanguageManager.GetLang("Disconnect"));
-            EventManager.FireEvent("OnBtnGoClientlessChanged", false);
-            EventManager.FireEvent("OnBtnStartClientChanged", true);
-            EventManager.FireEvent("OnBtnStartClientlessChanged", false);
-            EventManager.FireEvent("OnBtnClientHideShowChanged", false);
+            EventManager.FireEvent("OnSwitchToClientless");
         }
         public static async Task StartClientlessAsync()
         {
@@ -299,7 +232,7 @@ namespace RSBot.General
                 {                    
                     Game.Clientless = true;
                     Log.StatusLang("StartingClientless");
-                    EventManager.FireEvent("OnBtnStartClientlessTextChanged", LanguageManager.GetLang("Disconnect"));
+                    EventManager.FireEvent("OnClientlessProcessStarted");
 
                     var userAuthenticated = await HandleRegionalAuth();
 
@@ -317,9 +250,7 @@ namespace RSBot.General
             {
                 Game.Clientless = false;
 
-                EventManager.FireEvent("OnBtnStartClientChanged", true);
-                EventManager.FireEvent("OnBtnStartClientlessChanged", true);
-                EventManager.FireEvent("OnBtnStartClientlessTextChanged", LanguageManager.GetLang("Start") + " Clientless");
+                EventManager.FireEvent("OnAutoReloginOngoing");
                 
                 Kernel.Proxy.Shutdown();                
             });
@@ -335,19 +266,9 @@ namespace RSBot.General
         }
         public static void KillClient()
         {
-            if (!Game.Clientless && Kernel.Proxy != null && Kernel.Proxy.IsConnectedToAgentserver)
-            {
-                var extraStr = LanguageManager.GetLang("KillClientWarnMsgBoxSplit1");
-                if (!GlobalConfig.Get<bool>("RSBot.General.StayConnected"))
-                    extraStr = LanguageManager.GetLang("KillClientWarnMsgBoxSplit2");
-
-                var title = LanguageManager.GetLang("Warning");
-                var content = LanguageManager.GetLang("KillClientWarnMsgBoxContent", extraStr);
-
-                if (MessageBox.Show(content, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-                    ClientManager.Kill();
-
-                return;
+            if (!IsClientless)
+            {                
+                ClientManager.Kill();
             }
         }
     }

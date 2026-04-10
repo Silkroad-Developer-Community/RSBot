@@ -1,4 +1,11 @@
-﻿using System;
+﻿using RSBot.Core;
+using RSBot.Core.Client;
+using RSBot.Core.Components;
+using RSBot.Core.Event;
+using RSBot.General.Components;
+using RSBot.General.Models;
+using SDUI.Controls;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
@@ -6,13 +13,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using RSBot.Core;
-using RSBot.Core.Client;
-using RSBot.Core.Components;
-using RSBot.Core.Event;
-using RSBot.General.Components;
-using RSBot.General.Models;
-using SDUI.Controls;
 
 namespace RSBot.General.Views;
 
@@ -27,13 +27,10 @@ internal partial class Main : DoubleBufferedControl
     /// </summary>
     public Main()
     {
-        CheckForIllegalCrossThreadCalls = false;
+        //CheckForIllegalCrossThreadCalls = false;
 
         InitializeComponent();
         SubscribeEvents();
-
-        //btnStartClient.SetUseAsync(true);
-        //btnStartClientless.SetUseAsync(true);
     }
 
     /// <summary>
@@ -46,15 +43,15 @@ internal partial class Main : DoubleBufferedControl
         EventManager.SubscribeEvent("OnStartClient", OnStartClient);
         EventManager.SubscribeEvent("OnCharacterListReceived", OnCharacterListReceived);
         EventManager.SubscribeEvent("OnInitialized", OnInitialized);
-        EventManager.SubscribeEvent("OnBtnStartClientChanged", OnBtnStartClientChanged);
-        EventManager.SubscribeEvent("OnBtnStartClientlessChanged", OnBtnStartClientlessChanged);
-        EventManager.SubscribeEvent("OnBtnGoClientlessChanged", OnBtnGoClientlessChanged);
         EventManager.SubscribeEvent("OnAutoLoginAborted", OnAutoLoginAborted);
-        EventManager.SubscribeEvent("OnBtnClientHideShowChanged", OnBtnClientHideShowChanged);
-        EventManager.SubscribeEvent("OnBtnStartClientTextChanged", OnBtnStartClientTextChanged);
-        EventManager.SubscribeEvent("OnBtnClientHideShowTextChanged", OnBtnClientHideShowTextChanged);
-        EventManager.SubscribeEvent("OnBtnStartClientlessTextChanged", OnBtnStartClientlessTextChanged);
-        EventManager.SubscribeEvent("OnTxtSilkroadPathChanged", OnTxtSilkroadPathChanged);
+        EventManager.SubscribeEvent("OnSwitchToClientless", OnSwitchToClientless);
+        EventManager.SubscribeEvent("OnAutoReloginStarted", OnAutoReloginStarted);
+        EventManager.SubscribeEvent("OnClientDisconnected", OnClientDisconnected);
+        EventManager.SubscribeEvent("OnAutoReloginOngoing", OnAutoReloginOngoing);
+        EventManager.SubscribeEvent("OnEnterGame", OnEnterGame);
+        EventManager.SubscribeEvent("OnExitClient", OnExitClient);
+        EventManager.SubscribeEvent("OnClientProcessStarted", OnClientProcessStarted);
+        EventManager.SubscribeEvent("OnClientlessProcessStarted", OnClientlessProcessStarted);
     }
 
     /// <summary>
@@ -62,6 +59,11 @@ internal partial class Main : DoubleBufferedControl
     /// </summary>
     private void OnInitialized()
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnInitialized));
+            return;
+        }
         comboBoxClientType.Items.AddRange(Enum.GetNames(typeof(GameClientType)));
         comboCharacter.SelectedIndex = 0;
 
@@ -183,29 +185,15 @@ internal partial class Main : DoubleBufferedControl
     }
 
     /// <summary>
-    ///     Starts the client process.
-    /// </summary>
-    private async Task StartClientProcess()
-    {
-        btnStartClient.Enabled = false;
-        Game.Start();
-
-        await Task.Run(async () =>
-        {
-            var startedResult = await ClientManager.Start();
-            if (!startedResult)
-            {
-                OnExitClient();
-                Log.WarnLang("ClientStartingError");
-            }
-        });
-    }
-
-    /// <summary>
     ///     Called when [start client].
     /// </summary>
     private void OnStartClient()
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnStartClient));
+            return;
+        }
         btnStartClient.Enabled = false;
         btnStartClientless.Enabled = false;
         _clientVisible = true;
@@ -220,35 +208,19 @@ internal partial class Main : DoubleBufferedControl
     /// </summary>
     private void OnExitClient()
     {
-        Log.StatusLang("Ready");
-        _clientVisible = false;
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnExitClient));
+            return;
+        }
         btnStartClient.Text = LanguageManager.GetLang("Start") + " Client";
 
-        if (Game.Clientless)
+        if (GeneralManager.IsClientless)
             return;
 
         btnStartClient.Enabled = true;
         btnStartClientless.Enabled = true;
         btnClientHideShow.Enabled = false;
-
-        if (!GlobalConfig.Get<bool>("RSBot.General.StayConnected"))
-        {
-            Kernel.Proxy.Shutdown();
-        }
-        else
-        {
-            if (!Kernel.Proxy.IsConnectedToAgentserver)
-                return;
-
-            btnStartClient.Enabled = false;
-
-            ClientlessManager.GoClientless();
-
-            btnGoClientless.Enabled = false;
-            btnStartClientless.Text = LanguageManager.GetLang("Disconnect");
-
-            Log.NotifyLang("ClientlessModeActivated");
-        }
     }
 
     /// <summary>
@@ -265,46 +237,106 @@ internal partial class Main : DoubleBufferedControl
     /// </summary>
     private void OnClientConnected()
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnClientConnected));
+            return;
+        }
         btnStartClientless.Enabled = false;
     }
 
+    private void OnSwitchToClientless()
+    {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnSwitchToClientless));
+            return;
+        }
+        btnStartClientless.Text = LanguageManager.GetLang("Disconnect");
+        btnGoClientless.Enabled = false;
+        btnStartClient.Enabled = true;
+        btnStartClientless.Enabled = true;
+        btnClientHideShow.Enabled = false;
+    }
+
     #region LogicEvents
-    private void OnBtnStartClientChanged(bool isVisible)
-    {
-        btnStartClient.Enabled = isVisible;
-    }
-    private void OnBtnStartClientlessChanged(bool isVisible)
-    {
-        btnStartClientless.Enabled = isVisible;
-    }
-    private void OnBtnGoClientlessChanged(bool isVisible)
-    {
-        btnGoClientless.Enabled = isVisible;
-    }
     private void OnAutoLoginAborted()
     {
         View.PendingWindow?.Hide();
         View.PendingWindow?.StopClientlessQueueTask();
     }
-    private void OnBtnClientHideShowChanged(bool isVisible)
+    private void OnAutoReloginStarted()
     {
-        btnClientHideShow.Enabled = isVisible;
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnAutoReloginStarted));
+            return;
+        }
+        btnStartClient.Enabled = false;
+        btnStartClientless.Enabled = false;
     }
-    private void OnBtnStartClientTextChanged(string text)
+    private void OnClientDisconnected()
     {
-        btnStartClient.Text = text;
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnClientDisconnected));
+            return;
+        }
+
+        btnGoClientless.Enabled = false;
+        btnStartClient.Enabled = true;
+        btnStartClientless.Enabled = true;
+
+        btnStartClient.Text = LanguageManager.GetLang("Start") + " Client";
+        btnStartClientless.Text = LanguageManager.GetLang("Start") + " Clientless";
     }
-    private void OnBtnClientHideShowTextChanged(string text)
+    private void OnAutoReloginOngoing()
     {
-        btnClientHideShow.Text = text;
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnAutoReloginOngoing));
+            return;
+        }
+
+        btnStartClient.Enabled = true;
+        btnStartClientless.Enabled = true;
+        btnStartClientless.Text = LanguageManager.GetLang("Start") + " Clientless";
     }
-    private void OnBtnStartClientlessTextChanged(string text)
+    private void OnClientProcessStarted()
     {
-        btnStartClientless.Text = text;
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnClientProcessStarted));
+            return;
+        }
+
+        btnStartClient.Enabled = false;
     }
-    private void OnTxtSilkroadPathChanged(string text)
+    private void OnClientlessProcessStarted()
     {
-        txtSilkroadPath.Text = text;
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnClientlessProcessStarted));
+            return;
+        }
+
+        btnStartClientless.Text = LanguageManager.GetLang("Disconnect");
+    }
+    private void OnEnterGame()
+    {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnEnterGame));
+            return;
+        }
+        if (!Game.Clientless)
+        {
+            btnClientHideShow.Enabled = true;
+            btnClientHideShow.Text = LanguageManager.GetLang("Hide") + " Client";
+            btnStartClient.Enabled = true;
+            btnStartClient.Text = LanguageManager.GetLang("Kill") + " Client";
+            btnGoClientless.Enabled = true;
+        }
     }
     #endregion
 
@@ -315,7 +347,34 @@ internal partial class Main : DoubleBufferedControl
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     private void btnBrowseSilkroadPath_Click(object sender, EventArgs e)
     {
-        GeneralManager.BrowseSilkroadPath();
+        using (var dialog = new OpenFileDialog())
+        {
+            var title = LanguageManager.GetLang("BrowseSilkroadPathDialogTitle");
+
+            var msgBoxTitle = LanguageManager.GetLang("BrowseSilkroadPathMsgBoxTitle");
+            var msgBoxContent = LanguageManager.GetLang("BrowseSilkroadPathMsgBoxContent");
+
+            dialog.Title = title;
+            dialog.Filter = "App (*.exe)|*.exe";
+            dialog.FileName = "sro_client.exe";
+
+            var result = dialog.ShowDialog();
+            if (result != DialogResult.OK)
+                return;
+
+            GeneralManager.ChangeSilkroadPath(dialog.FileName);
+
+            txtSilkroadPath.Text = dialog.FileName;
+
+            result = MessageBox.Show(msgBoxContent, msgBoxTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            GlobalConfig.Save();
+
+            if (result == DialogResult.Yes)
+            {
+                Application.Restart();
+            }
+        }       
     }
 
     /// <summary>
@@ -422,6 +481,16 @@ internal partial class Main : DoubleBufferedControl
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     private void btnGoClientless_Click(object sender, EventArgs e)
     {
+        if (Game.Clientless)
+            return;
+        var msgBoxTitle = LanguageManager.GetLang("GoClientlessMsgBoxTitle");
+        var msgBoxContent = LanguageManager.GetLang("GoClientlessMsgBoxContent");
+
+        if (
+            MessageBox.Show(msgBoxContent, msgBoxTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
+            != DialogResult.Yes
+        )
+            return;
         GeneralManager.GoClientless();
     }
 
@@ -477,12 +546,21 @@ internal partial class Main : DoubleBufferedControl
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     private async void btnStartClient_Click(object sender, EventArgs e)
     {
-        if (!Game.Clientless && Kernel.Proxy != null && Kernel.Proxy.IsConnectedToAgentserver)
+        if (!GeneralManager.IsClientless && GeneralManager.IsConnected)
         {
-            GeneralManager.KillClient();
+            var extraStr = LanguageManager.GetLang("KillClientWarnMsgBoxSplit1");
+            if (!GlobalConfig.Get<bool>("RSBot.General.StayConnected"))
+                extraStr = LanguageManager.GetLang("KillClientWarnMsgBoxSplit2");
+
+            var title = LanguageManager.GetLang("Warning");
+            var content = LanguageManager.GetLang("KillClientWarnMsgBoxContent", extraStr);
+
+            if (MessageBox.Show(content, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                GeneralManager.KillClient();
             return;
         }
-
+        if (GeneralManager.IsConnected)
+            return;
         await GeneralPlugin.Instance.Manager.StartClientAsync();
     }
 

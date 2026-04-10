@@ -13,11 +13,6 @@ public class LureBotbase : IBotbase
 {
     private bool _interrupted;
     public string Name => "RSBot.Lure";
-
-    public string DisplayName => "Lure";
-
-    public string TabText => DisplayName;
-
     public Area Area => LureConfig.Area;
 
     /// <summary>
@@ -78,12 +73,6 @@ public class LureBotbase : IBotbase
     }
 
     /// <summary>
-    ///     Gets the view.
-    /// </summary>
-    /// <returns></returns>
-    public Control View => Views.View.Main;
-
-    /// <summary>
     ///     Starts this instance.
     /// </summary>
     public void Start()
@@ -107,13 +96,5 @@ public class LureBotbase : IBotbase
     public void Register()
     {
         Log.Debug("[Lure] Botbase registered to the kernel!");
-    }
-
-    /// <summary>
-    ///     Translate the botbase plugin
-    /// </summary>
-    public void Translate()
-    {
-        LanguageManager.Translate(View, Kernel.Language);
-    }
+    }    
 }

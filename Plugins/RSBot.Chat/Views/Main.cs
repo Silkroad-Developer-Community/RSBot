@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
-using RSBot.Core;
 using RSBot.Core.Event;
 using RSBot.Core.Objects;
 using SDUI.Controls;
@@ -16,18 +15,12 @@ public partial class Main : DoubleBufferedControl
     {
         CheckForIllegalCrossThreadCalls = false;
         InitializeComponent();
-
         SubscribeEvents();
     }
-
-    /// <summary>
-    ///     Subscribes the events.
-    /// </summary>
     private void SubscribeEvents()
     {
-        EventManager.SubscribeEvent("OnEnterGame", OnEnterGame);
+        EventManager.SubscribeEvent("OnMessageReceived", AppendMessage);
     }
-
     /// <summary>
     ///     Sends the chat message.
     /// </summary>
@@ -37,13 +30,8 @@ public partial class Main : DoubleBufferedControl
         if (!Enum.TryParse<ChatType>(sender.Tag.ToString(), out var chatType))
             return;
 
-        if (chatType == ChatType.Global)
-            Bundle.Chat.SendGlobalChatPacket(sender.Text);
-        else
-            Bundle.Chat.SendChatPacket(chatType, sender.Text, txtRecievePrivate.Text);
+        ChatManager.Send(chatType, sender.Text, txtRecievePrivate.Text);
 
-        if (chatType == ChatType.Private)
-            PlayerConfig.Set("RSBot.Chat.LastWhisper", txtRecievePrivate.Text);
     }
 
     /// <summary>
@@ -102,14 +90,6 @@ public partial class Main : DoubleBufferedControl
                 txtStall.Write(message);
                 break;
         }
-    }
-
-    /// <summary>
-    ///     The first event that will be fired after the player enters the game
-    /// </summary>
-    private void OnEnterGame()
-    {
-        txtRecievePrivate.Text = PlayerConfig.Get<string>("RSBot.Chat.LastWhisper");
     }
 
     /// <summary>

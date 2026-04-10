@@ -25,34 +25,47 @@ public class PluginManager
     ///     The extensions.
     /// </value>
     public Dictionary<string, IPlugin> Extensions { get; private set; }
+    public Dictionary<string, IPluginView> ExtensionsViews { get; private set; }
 
     /// <summary>
     ///     Loads the assemblies.
     /// </summary>
-    public bool LoadAssemblies()
+    public bool LoadAssemblies(bool isHeadless = false)
     {
         if (Extensions != null)
             return false;
 
-        Extensions = new Dictionary<string, IPlugin>();
+        Extensions = new Dictionary<string, IPlugin>();        
+        ExtensionsViews = new Dictionary<string, IPluginView>();
 
         try
         {
-            foreach (
-                var extension in from file in Directory.GetFiles(InitialDirectory)
-                let fileInfo = new FileInfo(file)
-                where fileInfo.Extension == ".dll"
-                select GetExtensionsFromAssembly(file) into loadedExtensions
-                from extension in loadedExtensions
-                select extension
-            )
+            var files = Directory.GetFiles(InitialDirectory, "*.dll");
+            foreach (var file in files)
             {
-                Extensions.Add(extension.Key, extension.Value);
-                Log.Debug($"Loaded plugin [{extension.Value.InternalName}]");
-            }
+                var (plugins, views) = GetExtensionsFromAssembly(file);
 
+                foreach (var plugin in plugins)
+                {
+                    if (!Extensions.ContainsKey(plugin.Key))
+                    {
+                        Extensions.Add(plugin.Key, plugin.Value);
+                    }
+                }
+                if (!isHeadless)
+                {
+                    foreach (var view in views)
+                    {
+                        if (!ExtensionsViews.ContainsKey(view.Key))
+                        {
+                            ExtensionsViews.Add(view.Key, view.Value);
+                            Log.Debug($"Loaded view [{view.Value.InternalName}]");
+                        }
+                    }
+                }
+            }
             //order by index, not alphabeticaly
-            Extensions = Extensions.OrderBy(entry => entry.Value.Index).ToDictionary(x => x.Key, x => x.Value);
+            ExtensionsViews = ExtensionsViews.OrderBy(entry => entry.Value.Index).ToDictionary(x => x.Key, x => x.Value);
 
             EventManager.FireEvent("OnLoadPlugins");
 
@@ -73,27 +86,37 @@ public class PluginManager
     /// </summary>
     /// <param name="file">The file.</param>
     /// <returns></returns>
-    private static Dictionary<string, IPlugin> GetExtensionsFromAssembly(string file)
+    private static (Dictionary<string, IPlugin>, Dictionary<string, IPluginView>) GetExtensionsFromAssembly(string file)
     {
-        var result = new Dictionary<string, IPlugin>();
-
-        var assembly = Assembly.LoadFrom(file);
+        var plugins = new Dictionary<string, IPlugin>();
+        var views = new Dictionary<string, IPluginView>();
+;
 
         try
         {
+            var assembly = Assembly.LoadFrom(file);
             var assemblyTypes = assembly.GetTypes();
 
-            foreach (
-                var extension in (
-                    from type in assemblyTypes
-                    where type.IsPublic && !type.IsAbstract && type.GetInterface("IPlugin") != null
-                    select Activator.CreateInstance(type)
-                ).OfType<IPlugin>()
-            )
-                result.Add(extension.InternalName, extension);
+            foreach (var type in assemblyTypes.Where(t => t.IsPublic && !t.IsAbstract))
+            {
+                object instance = null;
 
-            if (result.Count == 0)
-                return result;
+                if (typeof(IPlugin).IsAssignableFrom(type))
+                {
+                    instance = Activator.CreateInstance(type);
+                    var plugin = (IPlugin)instance;
+                    plugins[plugin.InternalName] = plugin;
+                }
+
+                if (typeof(IPluginView).IsAssignableFrom(type))
+                {
+                    instance ??= Activator.CreateInstance(type);
+                    var view = (IPluginView)instance;
+                    views[view.InternalName] = view;
+                }
+            }
+            if (plugins.Count == 0 && views.Count == 0)
+                return (plugins, views);
 
             var handlerType = typeof(IPacketHandler);
             var hookType = typeof(IPacketHook);
@@ -113,6 +136,6 @@ public class PluginManager
             /* ignore, it's an invalid extension */
         }
 
-        return result;
+        return (plugins, views);
     }
 }

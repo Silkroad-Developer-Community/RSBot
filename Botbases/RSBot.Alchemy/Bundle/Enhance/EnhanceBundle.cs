@@ -297,7 +297,7 @@ internal class EnhanceBundle : IAlchemyBundle
             return;
 
         //After fusing a magic stone (steady, astral & co.) tell the bot to continue to fuse elixirs!
-        if (Bootstrap.IsActive && _isStoneFusing)
+        if (AlchemyBase.IsActive && _isStoneFusing)
         {
             _shouldRun = true;
             _isStoneFusing = false;

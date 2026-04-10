@@ -200,7 +200,7 @@ internal class MagicBundle : IAlchemyBundle
     /// <param name="type"></param>
     private void OnFuseRequest(AlchemyAction action, AlchemyType type)
     {
-        if (type != AlchemyType.MagicStone || !Bootstrap.IsActive)
+        if (type != AlchemyType.MagicStone || !AlchemyBase.IsActive)
             return;
 
         _shouldRun = false;
@@ -211,7 +211,7 @@ internal class MagicBundle : IAlchemyBundle
     /// </summary>
     private void OnStoneAlchemy(AlchemyType type)
     {
-        if (type != AlchemyType.MagicStone || !Bootstrap.IsActive)
+        if (type != AlchemyType.MagicStone || !AlchemyBase.IsActive)
             return;
 
         _shouldRun = true;
@@ -223,7 +223,7 @@ internal class MagicBundle : IAlchemyBundle
     /// <param name="newItem">The new item after the successful action</param>
     private void OnStoneAlchemySuccess(InventoryItem oldItem, InventoryItem newItem, AlchemyType type)
     {
-        if (type != AlchemyType.MagicStone || !Bootstrap.IsActive)
+        if (type != AlchemyType.MagicStone || !AlchemyBase.IsActive)
             return;
 
         if (oldItem == null)
@@ -284,7 +284,7 @@ internal class MagicBundle : IAlchemyBundle
     /// <param name="newItem">The new item after the operation failed</param>
     private void OnStoneAlchemyFailed(InventoryItem oldItem, InventoryItem newItem, AlchemyType type)
     {
-        if (type != AlchemyType.MagicStone || !Bootstrap.IsActive)
+        if (type != AlchemyType.MagicStone || !AlchemyBase.IsActive)
             return;
 
         Globals.View.AddLog(
@@ -301,7 +301,7 @@ internal class MagicBundle : IAlchemyBundle
     /// <param name="errorCode">The error code</param>
     private void OnStoneAlchemyError(ushort errorCode, AlchemyType type)
     {
-        if (type != AlchemyType.MagicStone || !Bootstrap.IsActive)
+        if (type != AlchemyType.MagicStone || !AlchemyBase.IsActive)
             return;
 
         var translationName = GetErrorTranslationName(errorCode);

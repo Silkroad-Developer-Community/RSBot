@@ -635,8 +635,8 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     public void OnPartyDismiss()
     {
-        if (!Game.Ready)
-            return;
+        //if (!Game.Ready)
+        //    return;
 
         Bundle.Container.PartyMatching.HasMatchingEntry = false;
         btnLeaveParty.Enabled = false;

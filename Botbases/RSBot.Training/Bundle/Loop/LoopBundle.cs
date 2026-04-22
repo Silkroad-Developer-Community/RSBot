@@ -1,8 +1,9 @@
-﻿using System.IO;
+using System.IO;
 using System.Threading;
 using RSBot.Core;
 using RSBot.Core.Components;
 using RSBot.Core.Objects;
+using RSBot.Training.Bot;
 
 namespace RSBot.Training.Bundle.Loop;
 
@@ -159,12 +160,23 @@ internal class LoopBundle : IBundle
     /// </summary>
     public void CheckForWalkbackScript(bool startFromTown = false)
     {
-        if (
-            Config.WalkScript == null
-            || ScriptManager.Running
-            || !File.Exists(Config.WalkScript)
-            || !Kernel.Bot.Running
-        )
+        if (ScriptManager.Running || !Kernel.Bot.Running)
+            return;
+
+        if (Config.WalkScript == null || !File.Exists(Config.WalkScript))
+        {
+            Log.Notify("No walkback script found. Attempting to generate a dynamic path...");
+            if (NavigationManager.CalculatePathToTrainingArea())
+            {
+                var dynamicScript = NavigationManager.GenerateRBSFile();
+                if (dynamicScript != null)
+                {
+                    Config.WalkScript = dynamicScript;
+                }
+            }
+        }
+
+        if (Config.WalkScript == null || !File.Exists(Config.WalkScript))
             return;
 
         Invoke();

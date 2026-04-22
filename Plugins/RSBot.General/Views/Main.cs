@@ -262,6 +262,11 @@ internal partial class Main : DoubleBufferedControl
     #region LogicEvents
     private void OnAutoLoginAborted()
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action(OnAutoLoginAborted));
+            return;
+        }
         View.PendingWindow?.Hide();
         View.PendingWindow?.StopClientlessQueueTask();
     }

@@ -10,7 +10,6 @@ namespace RSBot.General
 {
     public class GeneralManager
     {
-        private bool _clientVisible;
         private static int _reloginSeq;
         public static bool IsClientless => Game.Clientless && Kernel.Proxy != null && Kernel.Proxy.IsConnectedToAgentserver;
         public static bool IsConnected => Kernel.Proxy != null && Kernel.Proxy.IsConnectedToAgentserver;
@@ -168,7 +167,6 @@ namespace RSBot.General
         private void OnExitClient()
         {
             Log.StatusLang("Ready");
-            _clientVisible = false;
 
             if (Game.Clientless)
                 return;

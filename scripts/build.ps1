@@ -29,6 +29,8 @@ Write-Output "Building with '$Configuration' configuration..."
 $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
 $msBuildPath = Join-Path $vsPath "MSBuild\Current\Bin\MSBuild.exe"
 & $msBuildPath /p:Configuration=$Configuration /p:Platform=x86 RSBot.sln > build.log
+$buildExitCode = $LASTEXITCODE
+
 Write-Output "NOTE: This is a truncated view of the build logs. For the full log, refer to .\build.log"
 Get-Content -Path "build.log" -Tail 100
 
@@ -37,7 +39,13 @@ if ($Clean) {
     Remove-Item -Recurse -Force ".\temp" -ErrorAction SilentlyContinue > $null
 }
 
-if (!$DoNotStart) {
-    Write-Output "Starting RSBot..."
-    & ".\Build\RSBot.exe"
+if ($buildExitCode -eq 0) {
+    if (!$DoNotStart) {
+        Write-Output "Starting RSBot..."
+        & ".\Build\RSBot.exe"
+    }
+}
+else {
+    Write-Output "Build failed. Check build.log for details."
+    exit $buildExitCode
 }

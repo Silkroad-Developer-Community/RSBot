@@ -43,7 +43,7 @@ internal class AttackBundle
     /// </summary>
     public void Tick()
     {
-        if (!TradeBotbase.IsActive || Game.Player.HasActiveVehicle || Bundles.RouteBundle.TownscriptRunning)
+        if (!TradeBase.IsActive || Game.Player.HasActiveVehicle || Bundles.RouteBundle.TownscriptRunning)
         {
             IsAttacking = false;
 

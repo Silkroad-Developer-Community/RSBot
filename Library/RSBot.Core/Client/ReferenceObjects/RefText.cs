@@ -1,4 +1,4 @@
-﻿namespace RSBot.Core.Client.ReferenceObjects;
+namespace RSBot.Core.Client.ReferenceObjects;
 
 public class RefText : IReference<string>
 {
@@ -60,6 +60,10 @@ public class RefText : IReference<string>
 
         if (Game.ClientType == GameClientType.Japanese)
             languageTab = 9;
+
+        // Override if custom translation index is set
+        if (Game.ReferenceManager.LanguageTab >= 0)
+            languageTab = Game.ReferenceManager.LanguageTab;
 
         var maxTabs = parser.GetColumnCount();
 

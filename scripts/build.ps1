@@ -28,11 +28,8 @@ if ($Clean) {
 Write-Output "Building with '$Configuration' configuration..."
 $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
 $msBuildPath = Join-Path $vsPath "MSBuild\Current\Bin\MSBuild.exe"
-& $msBuildPath /p:Configuration=$Configuration /p:Platform=x86 RSBot.sln > build.log
+& $msBuildPath /p:Configuration=$Configuration /p:Platform=x86 RSBot.sln | Tee-Object -FilePath build.log
 $buildExitCode = $LASTEXITCODE
-
-Write-Output "NOTE: This is a truncated view of the build logs. For the full log, refer to .\build.log"
-Get-Content -Path "build.log" -Tail 100
 
 if ($Clean) {
     Move-Item ".\temp\User" ".\Build\User" -ErrorAction SilentlyContinue > $null
@@ -46,7 +43,20 @@ if ($buildExitCode -eq 0) {
     if (-not (Test-Path ".\Build\Data")) {
         New-Item -ItemType Directory ".\Build\Data" -Force | Out-Null
     }
-    Invoke-WebRequest -Uri $linkageUrl -OutFile $linkagePath -UseBasicParsing
+    $linkageTempPath = "$linkagePath.tmp"
+    try {
+        Invoke-WebRequest -Uri $linkageUrl -OutFile $linkageTempPath -UseBasicParsing -ErrorAction Stop
+        $jsonContent = Get-Content -Path $linkageTempPath -Raw
+        $null = $jsonContent | ConvertFrom-Json -ErrorAction Stop
+        Move-Item -Path $linkageTempPath -Destination $linkagePath -Force
+        Write-Output "Successfully updated navigation linkage data."
+    }
+    catch {
+        Write-Warning "Failed to update navigation linkage data: $($_.Exception.Message). Keeping existing file if it exists."
+        if (Test-Path $linkageTempPath) {
+            Remove-Item $linkageTempPath -Force
+        }
+    }
 
     if (!$DoNotStart) {
         Write-Output "Starting RSBot..."

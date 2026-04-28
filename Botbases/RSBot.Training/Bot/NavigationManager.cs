@@ -16,6 +16,7 @@ internal static class NavigationManager
     private const string LinkageUrl =
         "https://raw.githubusercontent.com/Silkroad-Developer-Community/Silkroad-NavLink/main/navigation_linkage.json";
     private static readonly string LinkagePath = Path.Combine(Kernel.BasePath, "Data", "navigation_linkage.json");
+    private static readonly object _linkageLock = new();
     private static NavigationLinkage _linkage;
     private static List<NodePathStep> _activePath;
 
@@ -27,35 +28,16 @@ internal static class NavigationManager
     private static string _linkageMaintainer;
     private static string _linkageContributors;
 
-    // A simple PriorityQueue implementation for environments where System.Collections.Generic.PriorityQueue is missing
-    private class PriorityQueue<TElement, TPriority>
-        where TPriority : IComparable<TPriority>
-    {
-        private List<(TElement Element, TPriority Priority)> _items = new();
-
-        public int Count => _items.Count;
-
-        public void Enqueue(TElement element, TPriority priority)
-        {
-            _items.Add((element, priority));
-            _items.Sort((a, b) => a.Priority.CompareTo(b.Priority));
-        }
-
-        public TElement Dequeue()
-        {
-            var item = _items[0].Element;
-            _items.RemoveAt(0);
-            return item;
-        }
-    }
-
     /// <summary>
     /// Loads the linkage data from the local file.
     /// </summary>
     public static bool LoadLinkageData()
     {
-        if (_linkage != null)
-            return true;
+        lock (_linkageLock)
+        {
+            if (_linkage != null)
+                return true;
+        }
 
         try
         {
@@ -70,23 +52,31 @@ internal static class NavigationManager
 
             var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-            _linkage = JsonSerializer.Deserialize<NavigationLinkage>(json, options);
+            var linkage = JsonSerializer.Deserialize<NavigationLinkage>(json, options);
 
-            if (_linkage == null || _linkage.Nodes == null)
+            if (linkage == null || linkage.Nodes == null || linkage.Edges == null)
             {
-                Log.Error("Failed to parse navigation linkage data.");
+                Log.Error("Failed to parse navigation linkage data. Ensure both Nodes and Edges are present.");
                 return false;
             }
 
-            // Persist metadata
-            _linkageVersion = _linkage.Version;
-            _linkageDate = _linkage.Date;
-            _linkageCopyright = _linkage.Copyright;
-            _linkageLicense = _linkage.License;
-            _linkageMaintainer = _linkage.Maintainer;
-            _linkageContributors = _linkage.Contributors;
+            lock (_linkageLock)
+            {
+                if (_linkage != null)
+                    return true;
 
-            Log.Notify($"Loaded {_linkage.Nodes.Count} nodes and {_linkage.Edges.Count} edges.");
+                _linkage = linkage;
+
+                // Persist metadata
+                _linkageVersion = _linkage.Version;
+                _linkageDate = _linkage.Date;
+                _linkageCopyright = _linkage.Copyright;
+                _linkageLicense = _linkage.License;
+                _linkageMaintainer = _linkage.Maintainer;
+                _linkageContributors = _linkage.Contributors;
+            }
+
+            Log.Notify($"Loaded {linkage.Nodes.Count} nodes and {linkage.Edges.Count} edges.");
             LogLinkageMetadata();
 
             return true;
@@ -103,15 +93,18 @@ internal static class NavigationManager
     /// </summary>
     private static void LogLinkageMetadata()
     {
-        if (string.IsNullOrEmpty(_linkageVersion))
-            return;
+        lock (_linkageLock)
+        {
+            if (string.IsNullOrEmpty(_linkageVersion))
+                return;
 
-        Log.Notify($"[Navigation] Version: {_linkageVersion}");
-        Log.Notify($"[Navigation] Date: {_linkageDate}");
-        Log.Notify($"[Navigation] Copyright: {_linkageCopyright}");
-        Log.Notify($"[Navigation] License: {_linkageLicense}");
-        Log.Notify($"[Navigation] Maintainer: {_linkageMaintainer}");
-        Log.Notify($"[Navigation] Contributors: {_linkageContributors}");
+            Log.Notify($"[Navigation] Version: {_linkageVersion}");
+            Log.Notify($"[Navigation] Date: {_linkageDate}");
+            Log.Notify($"[Navigation] Copyright: {_linkageCopyright}");
+            Log.Notify($"[Navigation] License: {_linkageLicense}");
+            Log.Notify($"[Navigation] Maintainer: {_linkageMaintainer}");
+            Log.Notify($"[Navigation] Contributors: {_linkageContributors}");
+        }
     }
 
     /// <summary>
@@ -131,14 +124,31 @@ internal static class NavigationManager
                 return false;
             }
 
+            // Validate JSON before saving
+            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var linkage = JsonSerializer.Deserialize<NavigationLinkage>(json, options);
+
+            if (linkage == null || linkage.Nodes == null || linkage.Edges == null)
+            {
+                Log.Error("Fetched navigation data is malformed. Validation failed.");
+                return false;
+            }
+
             var directory = Path.GetDirectoryName(LinkagePath);
-            if (!Directory.Exists(directory))
+            if (directory != null && !Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
-            File.WriteAllText(LinkagePath, json);
+            // Use temporary file for safer replace
+            var tempPath = LinkagePath + ".tmp";
+            File.WriteAllText(tempPath, json);
+            File.Move(tempPath, LinkagePath, true);
+
             Log.Notify("Successfully updated local navigation linkage data.");
 
-            _linkage = null; // Force reload
+            lock (_linkageLock)
+            {
+                _linkage = null; // Force reload
+            }
             return LoadLinkageData();
         }
         catch (Exception e)
@@ -171,6 +181,14 @@ internal static class NavigationManager
             }
         }
 
+        NavigationLinkage linkage;
+        lock (_linkageLock)
+        {
+            linkage = _linkage;
+            if (linkage == null)
+                return false;
+        }
+
         var targetPos = new Position(
             PlayerConfig.Get<ushort>("RSBot.Area.Region"),
             PlayerConfig.Get<float>("RSBot.Area.X"),
@@ -184,7 +202,7 @@ internal static class NavigationManager
         var idToSid = new Dictionary<string, string>();
         var sidToNids = new Dictionary<string, List<string>>();
 
-        foreach (var kvp in _linkage.Nodes)
+        foreach (var kvp in linkage.Nodes)
         {
             var sid = GetSemanticName(kvp.Value.X, kvp.Value.Y, kvp.Value.Region);
             idToSid[kvp.Key] = sid;
@@ -193,8 +211,8 @@ internal static class NavigationManager
             sidToNids[sid].Add(kvp.Key);
         }
 
-        var startNodeId = GetNearestNodeId(playerPos);
-        var endNodeId = GetNearestNodeId(targetPos);
+        var startNodeId = GetNearestNodeId(playerPos, linkage);
+        var endNodeId = GetNearestNodeId(targetPos, linkage);
 
         if (startNodeId == null || endNodeId == null)
         {
@@ -212,7 +230,7 @@ internal static class NavigationManager
 
         // 2. Build Adjacency in Semantic Space
         var adjSid = new Dictionary<string, List<SemanticEdge>>();
-        foreach (var edge in _linkage.Edges.Values)
+        foreach (var edge in linkage.Edges.Values)
         {
             if (!idToSid.TryGetValue(edge.From, out var uSid) || !idToSid.TryGetValue(edge.To, out var vSid))
                 continue;
@@ -229,7 +247,7 @@ internal static class NavigationManager
             }
         }
 
-        var path = FindPath(startSid, endSid, adjSid, sidToNids);
+        var path = FindPath(startSid, endSid, adjSid, sidToNids, linkage);
 
         if (path == null)
         {
@@ -237,31 +255,22 @@ internal static class NavigationManager
             return false;
         }
 
-        _activePath = path;
-
-        // Add the final target position as a linear stretch
-        _activePath.Add(
-            new NodePathStep
-            {
-                NodeId = "TRAINING_TARGET",
-                Position = targetPos,
-                Edge = new LinkageEdge { Type = "walk" },
-            }
-        );
-
-        // Clear linkage data once path is cached to save memory
-        _linkage = null;
+        lock (_linkageLock)
+        {
+            _activePath = path;
+            _linkage = null; // Clear linkage data once path is cached to save memory
+        }
         GC.Collect();
 
         return true;
     }
 
-    private static string GetNearestNodeId(Position pos)
+    private static string GetNearestNodeId(Position pos, NavigationLinkage linkage)
     {
         string nearestId = null;
         double minDistance = double.MaxValue;
 
-        foreach (var kvp in _linkage.Nodes)
+        foreach (var kvp in linkage.Nodes)
         {
             var node = kvp.Value;
             var nodePos = new Position(node.X, node.Y, node.Region);
@@ -281,7 +290,8 @@ internal static class NavigationManager
         string startSid,
         string endSid,
         Dictionary<string, List<SemanticEdge>> adjSid,
-        Dictionary<string, List<string>> sidToNids
+        Dictionary<string, List<string>> sidToNids,
+        NavigationLinkage linkage
     )
     {
         var openSet = new PriorityQueue<string, float>();
@@ -290,7 +300,7 @@ internal static class NavigationManager
         var fScore = new Dictionary<string, float>();
 
         gScore[startSid] = 0;
-        fScore[startSid] = Heuristic(startSid, endSid, sidToNids);
+        fScore[startSid] = Heuristic(startSid, endSid, sidToNids, linkage);
         openSet.Enqueue(startSid, fScore[startSid]);
 
         while (openSet.Count > 0)
@@ -298,7 +308,7 @@ internal static class NavigationManager
             var current = openSet.Dequeue();
 
             if (current == endSid)
-                return ReconstructPath(cameFrom, startSid, current, sidToNids);
+                return ReconstructPath(cameFrom, startSid, current, sidToNids, linkage);
 
             if (!adjSid.ContainsKey(current))
                 continue;
@@ -306,13 +316,13 @@ internal static class NavigationManager
             foreach (var sEdge in adjSid[current])
             {
                 var neighborSid = sEdge.ToSid;
-                var tentativeGScore = gScore[current] + EdgeWeight(sEdge.EdgeData);
+                var tentativeGScore = gScore[current] + EdgeWeight(sEdge.EdgeData, linkage);
 
                 if (!gScore.ContainsKey(neighborSid) || tentativeGScore < gScore[neighborSid])
                 {
                     cameFrom[neighborSid] = (current, sEdge.EdgeData);
                     gScore[neighborSid] = tentativeGScore;
-                    fScore[neighborSid] = tentativeGScore + Heuristic(neighborSid, endSid, sidToNids);
+                    fScore[neighborSid] = tentativeGScore + Heuristic(neighborSid, endSid, sidToNids, linkage);
                     openSet.Enqueue(neighborSid, fScore[neighborSid]);
                 }
             }
@@ -321,10 +331,15 @@ internal static class NavigationManager
         return null;
     }
 
-    private static float Heuristic(string aSid, string bSid, Dictionary<string, List<string>> sidToNids)
+    private static float Heuristic(
+        string aSid,
+        string bSid,
+        Dictionary<string, List<string>> sidToNids,
+        NavigationLinkage linkage
+    )
     {
-        var nodeA = _linkage.Nodes[sidToNids[aSid][0]];
-        var nodeB = _linkage.Nodes[sidToNids[bSid][0]];
+        var nodeA = linkage.Nodes[sidToNids[aSid][0]];
+        var nodeB = linkage.Nodes[sidToNids[bSid][0]];
 
         if (nodeA.Region != nodeB.Region)
             return 0; // Cross-region: Use Dijkstra mode
@@ -334,13 +349,13 @@ internal static class NavigationManager
         return (float)posA.DistanceTo(posB);
     }
 
-    private static float EdgeWeight(LinkageEdge edge)
+    private static float EdgeWeight(LinkageEdge edge, NavigationLinkage linkage)
     {
         if (edge.Type == "teleport")
             return 100f;
 
-        var from = _linkage.Nodes[edge.From];
-        var to = _linkage.Nodes[edge.To];
+        var from = linkage.Nodes[edge.From];
+        var to = linkage.Nodes[edge.To];
         var posFrom = new Position(from.X, from.Y, from.Region);
         var posTo = new Position(to.X, to.Y, to.Region);
         return (float)posFrom.DistanceTo(posTo);
@@ -350,7 +365,8 @@ internal static class NavigationManager
         Dictionary<string, (string PrevSid, LinkageEdge Edge)> cameFrom,
         string startSid,
         string endSid,
-        Dictionary<string, List<string>> sidToNids
+        Dictionary<string, List<string>> sidToNids,
+        NavigationLinkage linkage
     )
     {
         var totalPath = new List<NodePathStep>();
@@ -359,7 +375,7 @@ internal static class NavigationManager
         while (cameFrom.ContainsKey(current))
         {
             var entry = cameFrom[current];
-            var node = _linkage.Nodes[sidToNids[current][0]];
+            var node = linkage.Nodes[sidToNids[current][0]];
 
             totalPath.Insert(
                 0,
@@ -373,7 +389,7 @@ internal static class NavigationManager
             current = entry.PrevSid;
         }
 
-        var startNode = _linkage.Nodes[sidToNids[startSid][0]];
+        var startNode = linkage.Nodes[sidToNids[startSid][0]];
         totalPath.Insert(
             0,
             new NodePathStep
@@ -392,8 +408,15 @@ internal static class NavigationManager
     /// </summary>
     public static string GenerateRBSFile()
     {
-        if (_activePath == null || _activePath.Count == 0)
-            return null;
+        List<NodePathStep> activePath;
+        lock (_linkageLock)
+        {
+            if (_activePath == null || _activePath.Count == 0)
+                return null;
+
+            activePath = new List<NodePathStep>(_activePath);
+            _activePath = null; // Clear path after generation
+        }
 
         var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
         var fileName = $"{timestamp}.rbs";
@@ -405,7 +428,7 @@ internal static class NavigationManager
         var filePath = Path.Combine(dynamicScriptsDir, fileName);
         var rbsLines = new List<string>();
 
-        foreach (var step in _activePath)
+        foreach (var step in activePath)
         {
             if (step.Edge.Type == "teleport")
             {
@@ -424,7 +447,6 @@ internal static class NavigationManager
         Log.Notify($"Generated dynamic walk script: {fileName}");
         LogLinkageMetadata();
 
-        _activePath = null; // Clear path after generation
         return filePath;
     }
 

@@ -40,6 +40,14 @@ if ($Clean) {
 }
 
 if ($buildExitCode -eq 0) {
+    Write-Output "Fetching navigation linkage data..."
+    $linkageUrl = "https://raw.githubusercontent.com/Silkroad-Developer-Community/Silkroad-NavLink/main/navigation_linkage.json"
+    $linkagePath = ".\Build\Data\navigation_linkage.json"
+    if (-not (Test-Path ".\Build\Data")) {
+        New-Item -ItemType Directory ".\Build\Data" -Force | Out-Null
+    }
+    Invoke-WebRequest -Uri $linkageUrl -OutFile $linkagePath -UseBasicParsing
+
     if (!$DoNotStart) {
         Write-Output "Starting RSBot..."
         & ".\Build\RSBot.exe"

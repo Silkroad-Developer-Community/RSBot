@@ -14,8 +14,8 @@ namespace RSBot.Training.Bot;
 internal static class NavigationManager
 {
     private const string LinkageUrl =
-        "https://raw.githubusercontent.com/Egezenn/Silkroad-NavLink/refs/heads/main/navigation_linkage.json";
-    private static readonly string LinkagePath = Path.Combine(Kernel.BasePath, "User", "navigation_linkage.json");
+        "https://raw.githubusercontent.com/Silkroad-Developer-Community/Silkroad-NavLink/main/navigation_linkage.json";
+    private static readonly string LinkagePath = Path.Combine(Kernel.BasePath, "Data", "navigation_linkage.json");
     private static NavigationLinkage _linkage;
     private static List<NodePathStep> _activePath;
 

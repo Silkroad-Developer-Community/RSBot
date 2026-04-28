@@ -27,5 +27,10 @@ jobs:
       - name: Handle dependencies
         run: dotnet restore RSBot.sln
 
+      - name: Run CSharpier
+        run: |
+          dotnet tool install -g csharpier
+          dotnet csharpier . --check
+
       - name: Build the application
         run: msbuild /p:Configuration=Release /p:Platform=x86

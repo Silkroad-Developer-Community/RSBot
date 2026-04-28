@@ -37,6 +37,7 @@ if ($Clean) {
 }
 
 if ($buildExitCode -eq 0) {
+    # TODO: move linkage logic to msbuild for vs devs
     Write-Output "Fetching navigation linkage data..."
     $linkageUrl = "https://raw.githubusercontent.com/Silkroad-Developer-Community/Silkroad-NavLink/main/navigation_linkage.json"
     $linkagePath = ".\Build\Data\navigation_linkage.json"

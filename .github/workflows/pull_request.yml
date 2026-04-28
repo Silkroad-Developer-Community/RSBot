@@ -29,8 +29,9 @@ jobs:
 
       - name: Run CSharpier
         run: |
-          dotnet tool install -g csharpier
-          dotnet csharpier . --check
+          dotnet new tool-manifest
+          dotnet tool install csharpier
+          dotnet tool run csharpier check .
 
       - name: Build the application
         run: msbuild /p:Configuration=Release /p:Platform=x86

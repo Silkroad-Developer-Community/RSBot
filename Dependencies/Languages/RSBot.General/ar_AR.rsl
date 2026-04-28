@@ -1,4 +1,4 @@
-DisplayName="General"
+DisplayName="عام"
 RSBot.General.Main.GroupBox.label8="إذا تم التفعيل بينما البوت في شريط المهام
 سينتقل البوت الى وضع التصغير تلقائيا ويعمل من هناك."
 RSBot.General.Main.GroupBox.checkBoxBotTrayMinimized="نقل البوت الى ايقونات النظام عن تصغيره الى شريط المهام"
@@ -103,4 +103,6 @@ NoPatchRequired="هذا العميل محدث ، لا حاجة إلى تصحيح
 Xhours="{0} ساعة "
 Xminutes="{0} دقائق "
 Xseconds="{0} ثوانى"
-PendingQueue="{0} is pending for server connection... People in stand by: {1} / {2}"
+PendingQueue="{0} ينتظر الاتصال بالخادم... الأشخاص في قائمة الانتظار: {1} / {2}"
+APIServerError="لا يمكنك تسجيل الدخول إلى اللعبة لأن حسابك إما غير مُفعّل أو قيد التفعيل. يُرجى المحاولة مرة أخرى بعد إتمام عملية التفعيل من البوابة (أو الموقع الإلكتروني)."
+TooManyAttempts="تم حظر هذا الحساب مؤقتًا بسبب كثرة محاولات تسجيل الدخول."

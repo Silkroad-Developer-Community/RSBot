@@ -13,7 +13,6 @@ public partial class Main : DoubleBufferedControl
 {
     public Main()
     {
-        CheckForIllegalCrossThreadCalls = false;
         InitializeComponent();
         SubscribeEvents();
     }
@@ -42,6 +41,12 @@ public partial class Main : DoubleBufferedControl
     /// <param name="type">The type.</param>
     public void AppendMessage(string message, string sender, ChatType type)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<string, string, ChatType>(AppendMessage), message, sender, type);
+            return;
+        }
+
         message = $"({sender}): {message}";
 
         switch (type)

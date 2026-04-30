@@ -24,7 +24,7 @@ public partial class Main : DoubleBufferedControl
     /// <summary>
     ///     <inheritdoc />
     /// </summary>
-    private readonly object _lock;
+    private readonly object _lock = new object();
 
     /// <summary>
     ///     <inheritdoc />
@@ -36,7 +36,6 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     public Main()
     {
-        _lock = new object();
         InitializeComponent();
         SubscribeEvents();
 
@@ -53,9 +52,9 @@ public partial class Main : DoubleBufferedControl
     private void SubscribeEvents()
     {
         EventManager.SubscribeEvent("OnLoadCharacter", OnLoadCharacter);
+        EventManager.SubscribeEvent("OnInventoryUpdate", UpdateInventoryList);
         EventManager.SubscribeEvent("OnUpdateInventoryItem", new Action<byte>(OnUpdateInventoryItem));
         EventManager.SubscribeEvent("OnUseItem", new Action<byte>(OnUpdateInventoryItem));
-        EventManager.SubscribeEvent("OnInventoryUpdate", UpdateInventoryList);
     }
 
     private void OnLoadCharacter()
@@ -601,7 +600,7 @@ public partial class Main : DoubleBufferedControl
         var useSelectedItem = itemsToUse.Contains(selectedItem.Record.CodeName);
 
         if (useSelectedItem)
-        {
+        {   
             lvItem.Font = Font;
             itemsToUse.Remove(selectedItem.Record.CodeName);
         }

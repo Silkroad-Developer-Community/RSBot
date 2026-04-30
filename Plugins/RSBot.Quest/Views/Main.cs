@@ -19,7 +19,6 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     public Main()
     {
-        CheckForIllegalCrossThreadCalls = false;
         InitializeComponent();
         View.SidebarElement = new QuestSidebarElement();
         EventManager.FireEvent("OnAddSidebarElement", View.SidebarElement);
@@ -235,6 +234,6 @@ public partial class Main : DoubleBufferedControl
                 MessageBoxButtons.YesNo
             ) == DialogResult.Yes
         )
-            Game.Player.QuestLog.AbandonQuest(questId);
+            QuestManager.AbandonQuest(questId);
     }
 }

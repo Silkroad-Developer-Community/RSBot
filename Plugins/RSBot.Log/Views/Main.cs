@@ -16,7 +16,6 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     public Main()
     {
-        CheckForIllegalCrossThreadCalls = false;
         InitializeComponent();
         LoadConfig();
 
@@ -38,6 +37,12 @@ public partial class Main : DoubleBufferedControl
     /// <param name="message">The message.</param>
     public void AppendLog(string message, LogLevel level = LogLevel.Notify)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<string, LogLevel>(AppendLog), message, level);
+            return;
+        }
+
         if (!checkEnabled.Checked)
             return;
 

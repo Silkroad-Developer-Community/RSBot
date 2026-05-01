@@ -38,7 +38,6 @@ internal class PartyUpdateResponse : IPacketHandler
         switch (type)
         {
             case PartyUpdateType.Dismissed:
-                Game.Party.Clear();
                 EventManager.FireEvent("OnPartyDismiss");
                 break;
 
@@ -61,7 +60,6 @@ internal class PartyUpdateResponse : IPacketHandler
                 else if (memberLeft.Name == Game.Player.Name)
                 {
                     EventManager.FireEvent("OnPartyDismiss");
-                    Game.Party.Clear();
                 }
                 else
                 {

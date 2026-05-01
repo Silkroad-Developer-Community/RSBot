@@ -635,14 +635,12 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     public void OnPartyDismiss()
     {
-        //if (!Game.Ready)
-        //    return;
-
         Bundle.Container.PartyMatching.HasMatchingEntry = false;
         btnLeaveParty.Enabled = false;
         menuLeave.Enabled = false;
         lblLeader.Text = LanguageManager.GetLang("NotInParty");
         listParty.Items.Clear();
+        Game.Party.Clear();
         Log.NotifyLang("PartyDismissed");
         OnDeletePartyEntry();
     }

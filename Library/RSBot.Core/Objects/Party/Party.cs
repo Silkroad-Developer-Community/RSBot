@@ -118,7 +118,7 @@ public class Party
     /// <summary>
     ///     Clears this instance.
     /// </summary>
-    internal void Clear()
+    public void Clear()
     {
         Members = null;
         Leader = null;

@@ -9,15 +9,10 @@ using RSBot.Trade.Components.Scripting;
 
 namespace RSBot.Trade;
 
-public class TradeBotbase : IBotbase
+public class TradeBase : IBotbase
 {
     public static bool IsActive => Kernel.Bot?.Botbase.Name == "RSBot.Trade" && Kernel.Bot.Running;
     public string Name => "RSBot.Trade";
-
-    public string DisplayName => "Trade";
-
-    public string TabText => DisplayName;
-
     public Area Area => new();
 
     /// <summary>
@@ -30,12 +25,6 @@ public class TradeBotbase : IBotbase
 
         Bundles.Tick();
     }
-
-    /// <summary>
-    ///     Gets the view.
-    /// </summary>
-    /// <returns></returns>
-    public Control View => Views.View.Main;
 
     /// <summary>
     ///     Starts this instance.
@@ -76,14 +65,6 @@ public class TradeBotbase : IBotbase
         ScriptManager.CommandHandlers.Add(new BuyGoodsScriptCommand());
 
         Bundles.Initialize();
-    }
-
-    /// <summary>
-    ///     Translate the botbase plugin
-    /// </summary>
-    public void Translate()
-    {
-        LanguageManager.Translate(View, Kernel.Language);
     }
 
     /// <summary>

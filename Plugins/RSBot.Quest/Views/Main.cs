@@ -1,12 +1,13 @@
-﻿using System;
+﻿using RSBot.Core;
+using RSBot.Core.Event;
+using RSBot.Core.Objects.Quests;
+using RSBot.Quest.Views.Sidebar;
+using SDUI;
+using SDUI.Controls;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
-using RSBot.Core;
-using RSBot.Core.Event;
-using RSBot.Core.Objects.Quests;
-using SDUI;
-using SDUI.Controls;
 
 namespace RSBot.Quest.Views;
 
@@ -18,9 +19,9 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     public Main()
     {
-        CheckForIllegalCrossThreadCalls = false;
         InitializeComponent();
-
+        View.SidebarElement = new QuestSidebarElement();
+        EventManager.FireEvent("OnAddSidebarElement", View.SidebarElement);
         SubscribeEvents();
         ApplyTheme();
     }
@@ -233,6 +234,6 @@ public partial class Main : DoubleBufferedControl
                 MessageBoxButtons.YesNo
             ) == DialogResult.Yes
         )
-            Game.Player.QuestLog.AbandonQuest(questId);
+            QuestManager.AbandonQuest(questId);
     }
 }

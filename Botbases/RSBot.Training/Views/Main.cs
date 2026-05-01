@@ -4,10 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
 using RSBot.Core;
-using RSBot.Core.Components;
 using RSBot.Core.Event;
 using RSBot.Core.Objects;
-using RSBot.Training.Bundle;
 using RSBot.Training.Views.Dialogs;
 using SDUI.Controls;
 using CheckBox = SDUI.Controls.CheckBox;
@@ -285,19 +283,7 @@ public partial class Main : DoubleBufferedControl
             return;
         }
 
-        var area = Kernel.Bot.Botbase.Area;
-        Position pos = new(x, y, region);
-
-        PlayerConfig.Set("RSBot.Area.Region", pos.Region);
-        PlayerConfig.Set("RSBot.Area.X", pos.XOffset);
-        PlayerConfig.Set("RSBot.Area.Y", pos.YOffset);
-        PlayerConfig.Set("RSBot.Area.Z", pos.ZOffset);
-
-        Log.Notify(
-            "[Training area] New training area coordinates set. "
-                + $"X: {pos.XOffset}, Y: {pos.YOffset}, Z: {pos.ZOffset}, Region: {pos.Region}"
-        );
-        EventManager.FireEvent("OnSetTrainingArea");
+        TrainingManager.ApplyTrainingArea(x, y, region);
     }
 
     /// <summary>
@@ -380,18 +366,6 @@ public partial class Main : DoubleBufferedControl
             item.Group = lvAvoidance.Groups["grpNone"];
 
         SaveAvoidance();
-    }
-
-    private void timerGrabByAbilityPet_Tick(object sender, EventArgs e)
-    {
-        if (Kernel.Bot.Running || !Game.Ready)
-            return;
-        if (
-            Bundles.Loot.Config.UseAbilityPet
-            && Game.Player.HasActiveAbilityPet
-            && !PickupManager.RunningAbilityPetPickup
-        )
-            PickupManager.RunAbilityPet(Game.Player.Position);
     }
 
     /// <summary>

@@ -12,7 +12,7 @@ internal class StopCommandExecutor : ICommandExecutor
     public bool Execute(bool silent)
     {
         if (!silent)
-            Game.ShowNotification($"[RSBot] Stopping bot [{Kernel.Bot?.Botbase.DisplayName}]");
+            Game.ShowNotification($"[RSBot] Stopping bot [{Kernel.Bot?.BotbaseView.DisplayName}]");
 
         Kernel.Bot?.Stop();
 

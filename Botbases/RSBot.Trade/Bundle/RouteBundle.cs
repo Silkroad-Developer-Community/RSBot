@@ -76,7 +76,7 @@ internal class RouteBundle
         if (error)
             return;
 
-        if (!TradeBotbase.IsActive || !Game.Ready)
+        if (!TradeBase.IsActive || !Game.Ready)
             return;
 
         TownscriptRunning = false;
@@ -201,7 +201,7 @@ internal class RouteBundle
             return;
 
         //Pick next route
-        if (CurrentRouteFile == null && !ScriptManager.Running && TradeBotbase.IsActive && !_blockedByRouteDialog)
+        if (CurrentRouteFile == null && !ScriptManager.Running && TradeBase.IsActive && !_blockedByRouteDialog)
         {
             var restartNearby = false;
 

@@ -26,6 +26,8 @@
     <ProjectReference Include="..\..\Library\RSBot.Core\RSBot.Core.csproj">
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\Plugins\RSBot.Chat\RSBot.Chat.csproj" />
+    <ProjectReference Include="..\..\Plugins\RSBot.General\RSBot.General.csproj" />
     <ProjectReference Include="..\..\SDUI\SDUI\SDUI.csproj" />
   </ItemGroup>
 

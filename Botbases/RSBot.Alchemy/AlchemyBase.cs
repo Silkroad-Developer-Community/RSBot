@@ -8,21 +8,13 @@ using RSBot.Core.Plugins;
 
 namespace RSBot.Alchemy;
 
-public class Bootstrap : IBotbase
+public class AlchemyBase : IBotbase
 {
-    private static readonly string _name = "RSBot.Alchemy";
+    public static bool IsActive => Kernel.Bot.Running && Kernel.Bot.Botbase.Name == "RSBot.Alchemy";
 
-    public static bool IsActive => Kernel.Bot.Running && Kernel.Bot.Botbase.Name == _name;
-
-    public string Name => _name;
-
-    public string DisplayName => "Alchemy";
-
-    public string TabText => DisplayName;
+    public string Name => "RSBot.Alchemy";
 
     public Area Area => new();
-
-    public Control View => Globals.View;
 
     public void Start()
     {
@@ -30,7 +22,6 @@ public class Bootstrap : IBotbase
 
         Log.AppendFormat(LogLevel.Debug, "[Alchemy] Starting automated alchemy...");
     }
-
     public void Stop()
     {
         if (Globals.Botbase != null)
@@ -38,25 +29,17 @@ public class Bootstrap : IBotbase
 
         Log.AppendFormat(LogLevel.Debug, "[Alchemy] Stopped automated alchemy");
     }
-
     public void Register()
     {
         Initialize();
 
         Log.Debug("[Alchemy] Botbase registered to the kernel!");
     }
-
     public void Tick()
     {
         if (!Globals.View.IsRefreshing && !AlchemyManager.IsFusing)
             Globals.Botbase.Tick();
     }
-
-    public void Translate()
-    {
-        LanguageManager.Translate(View, Kernel.Language);
-    }
-
     public void Initialize()
     {
         AlchemyEventsSubscriber.Subscribe();

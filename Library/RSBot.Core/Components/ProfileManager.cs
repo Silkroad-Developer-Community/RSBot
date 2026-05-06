@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
@@ -25,6 +25,10 @@ public class ProfileManager
     {
         _config = new Config(GetProfileConfigFileName());
         _profiles = new ObservableCollection<string>(_config.GetArray<string>("RSBot.Profiles", '|'));
+
+        if (!_profiles.Contains("Default"))
+            _profiles.Insert(0, "Default");
+
         _profiles.CollectionChanged += Profiles_CollectionChanged;
     }
 
@@ -110,11 +114,16 @@ public class ProfileManager
     /// <returns>Is created <c>true</c>; otherwise <c>false</c></returns>
     public static bool Add(string profile, bool useAsBase = false)
     {
-        if (profile.Equals("Profiles", StringComparison.InvariantCultureIgnoreCase))
+        string[] reservedNames = { "Profiles", "Default", "Settings" };
+
+        if (reservedNames.Any(n => n.Equals(profile, StringComparison.InvariantCultureIgnoreCase)))
             return false;
 
-        if (profile == SelectedProfile)
+        if (ProfileExists(profile))
+        {
+            SetSelectedProfile(profile);
             return true;
+        }
 
         _profiles.Add(profile);
 
@@ -127,7 +136,7 @@ public class ProfileManager
 
         SetSelectedProfile(profile);
 
-        return false;
+        return true;
     }
 
     /// <summary>

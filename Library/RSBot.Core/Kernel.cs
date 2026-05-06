@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -89,7 +89,7 @@ public static class Kernel
 #endif
             return GlobalConfig.Get("RSBot.DebugEnvironment", false);
         }
-        set => GlobalConfig.Set("RSBot.DebugEnvironments", value);
+        set => GlobalConfig.Set("RSBot.DebugEnvironment", value);
     }
 
     /// <summary>

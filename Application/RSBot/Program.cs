@@ -142,7 +142,7 @@ internal static class Program
                     Kernel.Bot?.Stop();
                     Console.WriteLine("Bot stopped");
                     break;
-                case "start client":
+                case "start-client":
                     _ = GeneralPlugin.Instance.Manager.StartClientAsync();
                     Console.WriteLine("Client started");
                     break;

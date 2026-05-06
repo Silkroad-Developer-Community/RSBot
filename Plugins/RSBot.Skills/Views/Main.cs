@@ -59,6 +59,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="removedPerk">The removed perk.</param>
     private void OnRemoveItemPerk(uint targetId, ItemPerk removedPerk)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<uint, ItemPerk>(OnRemoveItemPerk), targetId, removedPerk);
+            return;
+        }
         if (targetId != Game.Player.UniqueId || removedPerk == null)
             return;
 
@@ -81,6 +86,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="token">The token.</param>
     private void OnAddItemPerk(uint targetId, uint token)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<uint, uint>(OnAddItemPerk), targetId, token);
+            return;
+        }
         if (targetId != Game.Player.UniqueId)
             return;
 
@@ -470,6 +480,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="buffInfo">The added <see cref="BuffInfo" /></param>
     private void OnAddBuff(SkillInfo buffInfo)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<SkillInfo>(OnAddBuff), buffInfo);
+            return;
+        }
         try
         {
             var item = new ListViewItem { Text = buffInfo.Record.GetRealName(), Tag = buffInfo };
@@ -488,6 +503,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="buffInfo">The removed <see cref="BuffInfo" /></param>
     private void OnRemoveBuff(SkillInfo removingBuff)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<SkillInfo>(OnRemoveBuff), removingBuff);
+            return;
+        }
         try
         {
             for (var i = 0; i < listActiveBuffs.Items.Count; i++)
@@ -517,6 +537,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="learnedSkill"></param>
     private void OnSkillLearned(SkillInfo learnedSkill)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<SkillInfo>(OnSkillLearned), learnedSkill);
+            return;
+        }
         Log.NotifyLang("SkillLearned", learnedSkill.Record.GetRealName());
         LoadSkills();
     }
@@ -528,6 +553,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="newSkill">The new skill.</param>
     private void OnSkillUpgraded(SkillInfo oldSkill, SkillInfo newSkill)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<SkillInfo,SkillInfo>(OnSkillUpgraded), oldSkill, newSkill);
+            return;
+        }
         LoadSkills();
     }
 
@@ -538,6 +568,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="newSkill">The new skill.</param>
     private void OnWithdrawSkill(SkillInfo oldSkill, SkillInfo newSkill)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<SkillInfo, SkillInfo>(OnWithdrawSkill), oldSkill, newSkill);
+            return;
+        }
         LoadSkills();
     }
 
@@ -547,6 +582,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="info">The information.</param>
     private void OnLearnSkillMastery(MasteryInfo info)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<MasteryInfo>(OnLearnSkillMastery), info);
+            return;
+        }
         Log.NotifyLang("MasteryUpgraded", info.Record.Name);
 
         LoadSkills();
@@ -557,6 +597,11 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     private void OnLoadCharacter()
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(OnLoadCharacter);
+            return;
+        }
         comboMonsterType.SelectedIndex = 0;
 
         LoadSkills();

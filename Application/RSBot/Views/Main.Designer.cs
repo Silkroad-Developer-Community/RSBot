@@ -211,8 +211,8 @@ namespace RSBot.Views
             // 
             btnStartStop.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnStartStop.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            btnStartStop.BackColor = System.Drawing.Color.DodgerBlue;
-            btnStartStop.Color = System.Drawing.Color.FromArgb(33, 150, 243);
+            btnStartStop.BackColor = System.Drawing.Color.FromArgb(202, 179, 139);
+            btnStartStop.Color = System.Drawing.Color.FromArgb(202, 179, 139);
             btnStartStop.Font = new System.Drawing.Font("Segoe UI Semibold", 9.25F, System.Drawing.FontStyle.Bold);
             btnStartStop.ForeColor = System.Drawing.Color.White;
             btnStartStop.Location = new System.Drawing.Point(1110, 15);
@@ -285,10 +285,10 @@ namespace RSBot.Views
             // notifyIcon
             // 
             notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
-            notifyIcon.BalloonTipText = "RSBot is currently running in the system tray.";
-            notifyIcon.BalloonTipTitle = "RSBot";
+            notifyIcon.BalloonTipText = "OasisBot is currently running in the system tray.";
+            notifyIcon.BalloonTipTitle = "OasisBot";
             notifyIcon.Icon = (System.Drawing.Icon)resources.GetObject("notifyIcon.Icon");
-            notifyIcon.Text = "RSBot";
+            notifyIcon.Text = "OasisBot";
             notifyIcon.Visible = true;
             notifyIcon.Click += notifyIcon_Click;
             // 

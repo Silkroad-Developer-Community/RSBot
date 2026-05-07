@@ -1,4 +1,4 @@
-﻿namespace RSBot.Views
+namespace RSBot.Views
 {
     partial class ExitDialog
     {
@@ -53,7 +53,7 @@
             labelInfo.Name = "labelInfo";
             labelInfo.Size = new System.Drawing.Size(265, 45);
             labelInfo.TabIndex = 0;
-            labelInfo.Text = "Are you sure that you want to exit RSBot?\r\nThis will disconnect you from the Silkroad Server!\r\n\r\n";
+            labelInfo.Text = "Are you sure that you want to exit OasisBot?\r\nThis will disconnect you from the Silkroad Server!\r\n\r\n";
             // 
             // panel1
             // 

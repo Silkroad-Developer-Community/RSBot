@@ -1,4 +1,4 @@
-﻿namespace RSBot.Views.Controls
+namespace RSBot.Views.Controls
 {
     partial class MiniCosControl
     {
@@ -94,7 +94,7 @@
             Satiety.Gradient = new System.Drawing.Color[]
     {
     System.Drawing.Color.Turquoise,
-    System.Drawing.Color.DodgerBlue
+    System.Drawing.Color.FromArgb(202, 179, 139)
     };
             Satiety.HatchType = System.Drawing.Drawing2D.HatchStyle.Percent10;
             Satiety.Location = new System.Drawing.Point(3, 51);

@@ -1,4 +1,4 @@
-﻿using RSBot.Items.Properties;
+using RSBot.Items.Properties;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -1572,7 +1572,7 @@ namespace RSBot.Items.Views
             // btnSearch
             // 
             btnSearch.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnSearch.Color = Color.DodgerBlue;
+            btnSearch.Color = System.Drawing.Color.FromArgb(202, 179, 139);
             btnSearch.Font = new Font("Segoe UI", 9F);
             btnSearch.ForeColor = Color.White;
             btnSearch.Location = new Point(836, 8);

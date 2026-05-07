@@ -1,4 +1,4 @@
-﻿namespace RSBot.Views.Dialog
+namespace RSBot.Views.Dialog
 {
     partial class ProfileSelectionDialog
     {
@@ -71,7 +71,7 @@
             // 
             // btnOK
             // 
-            btnOK.Color = System.Drawing.Color.DodgerBlue;
+            btnOK.Color = System.Drawing.Color.FromArgb(202, 179, 139);
             btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             btnOK.Font = new System.Drawing.Font("Segoe UI Semibold", 11.25F, System.Drawing.FontStyle.Bold);
             btnOK.ForeColor = System.Drawing.Color.White;

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>disable</Nullable>
@@ -6,10 +6,10 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Description>Acts as RSBot Library- includes all neccessary logic that the bot and 3rd party applications require.</Description>
-    <Copyright>Copyright © 2026 Silkroad Developer Community</Copyright>
-    <PackageProjectUrl>https://github.com/Silkroad-Developer-Community/RSBot</PackageProjectUrl>
+    <Copyright>Copyright � 2026 Silkroad Developer Community</Copyright>
+    <PackageProjectUrl>https://github.com/Silkroad-Developer-Community/OasisBot</PackageProjectUrl>
     <PackageReadmeFile></PackageReadmeFile>
-    <RepositoryUrl>https://github.com/Silkroad-Developer-Community/RSBot</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Silkroad-Developer-Community/OasisBot</RepositoryUrl>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
 
@@ -18,3 +18,4 @@
     <ProjectReference Include="..\RSBot.NavMeshApi\RSBot.NavMeshApi.csproj" />
   </ItemGroup>
 </Project>
+

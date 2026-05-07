@@ -49,9 +49,10 @@ foreach ($c in $commits) {
         $authorDisplay = $localName.Trim()
     }
 
-    $log += "- [$($c.Subject)](https://github.com/Silkroad-Developer-Community/RSBot/commit/$($c.SHA)) - $authorDisplay"
+    $log += "- [$($c.Subject)](https://github.com/Silkroad-Developer-Community/OasisBot/commit/$($c.SHA)) - $authorDisplay"
 }
 
 # 4. Save with UTF8 encoding
 $log | Set-Content -Path $OutputFile -Encoding UTF8
 Write-Host "Changelog generated: $OutputFile"
+

@@ -1,4 +1,4 @@
-﻿namespace RSBot.General.Views
+namespace RSBot.General.Views
 {
     partial class PendingWindow
     {
@@ -162,10 +162,10 @@
             // notifyIcon
             // 
             notifyIcon.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            notifyIcon.BalloonTipText = "RSBot";
-            notifyIcon.BalloonTipTitle = "RSBot";
+            notifyIcon.BalloonTipText = "OasisBot";
+            notifyIcon.BalloonTipTitle = "OasisBot";
             notifyIcon.Icon = (System.Drawing.Icon)resources.GetObject("notifyIcon.Icon");
-            notifyIcon.Text = "RSBot";
+            notifyIcon.Text = "OasisBot";
             // 
             // PendingWindow
             // 

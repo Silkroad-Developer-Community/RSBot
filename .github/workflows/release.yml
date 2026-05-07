@@ -66,7 +66,7 @@ jobs:
         if: github.event.inputs.version != ''
         with:
           commit_message: "Version ${{ github.event.inputs.version }}"
-          file_pattern: "Application/RSBot/RSBot.csproj scripts/RSBot.iss"
+          file_pattern: "Application/RSBot/RSBot.csproj scripts/OasisBot.iss"
 
       - name: Create changelog
         if: steps.check_commits.outputs.has_new_commits == 'true'
@@ -95,14 +95,14 @@ jobs:
         run: |
           msbuild /p:Configuration=Release /p:Platform=x86
           cd Build
-          7z a -tzip -mm=lzma -mx=9 "../RSBot-Portable-${{ steps.versioning.outputs.version }}.zip" ./*
+          7z a -tzip -mm=lzma -mx=9 "../OasisBot-Portable-${{ steps.versioning.outputs.version }}.zip" ./*
           cd ..
 
       - name: Build Installer (Inno Setup)
         if: steps.check_commits.outputs.has_new_commits == 'true'
         shell: pwsh
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" scripts/RSBot.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" scripts/OasisBot.iss
 
       - name: Create release
         if: steps.check_commits.outputs.has_new_commits == 'true'
@@ -110,11 +110,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version || env.date }}
-          name: ${{ github.event.inputs.version != '' && format('RSBot {0}', github.event.inputs.version) || format('RSBot Nightly {0}', env.date) }}
+          name: ${{ github.event.inputs.version != '' && format('OasisBot {0}', github.event.inputs.version) || format('OasisBot Nightly {0}', env.date) }}
           body_path: commit_log.md
           prerelease: ${{ github.event.inputs.prerelease != 'false' }}
           files: |
-            RSBot-Portable-${{ steps.versioning.outputs.version }}.zip
-            RSBot-Setup-${{ steps.versioning.outputs.version }}.exe
+            OasisBot-Portable-${{ steps.versioning.outputs.version }}.zip
+            OasisBot-Setup-${{ steps.versioning.outputs.version }}.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

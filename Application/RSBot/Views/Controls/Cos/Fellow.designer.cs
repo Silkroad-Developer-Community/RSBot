@@ -1,4 +1,4 @@
-﻿namespace RSBot.Views.Controls.Cos
+namespace RSBot.Views.Controls.Cos
 {
     partial class Fellow
     {
@@ -119,7 +119,7 @@
             progressSatiety.Gradient = new System.Drawing.Color[]
     {
     System.Drawing.Color.Turquoise,
-    System.Drawing.Color.DodgerBlue
+    System.Drawing.Color.FromArgb(202, 179, 139)
     };
             progressSatiety.HatchType = System.Drawing.Drawing2D.HatchStyle.Percent10;
             progressSatiety.Location = new System.Drawing.Point(60, 82);

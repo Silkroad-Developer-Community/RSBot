@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using RSBot.Core;
 using RSBot.Core.Objects;
@@ -50,7 +50,7 @@ public partial class AutoFormParty : UIWindowBase
         max_level.Value = Bundle.Container.PartyMatching.Config.LevelTo;
 
         if (!Game.Party.Settings.ExperienceAutoShare && !Game.Party.Settings.ItemAutoShare)
-            tb_Title.Text = "Auto LTP - RSBot";
+            tb_Title.Text = "Auto LTP - OasisBot";
         else
             tb_Title.Text = Bundle.Container.PartyMatching.Config.Title;
     }
@@ -84,7 +84,7 @@ public partial class AutoFormParty : UIWindowBase
 
         if (!Game.Party.Settings.ExperienceAutoShare && !Game.Party.Settings.ItemAutoShare)
         {
-            tb_Title.Text = "Auto LTP - RSBot";
+            tb_Title.Text = "Auto LTP - OasisBot";
         }
         else
         {

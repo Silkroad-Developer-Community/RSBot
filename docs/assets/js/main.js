@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="communityDropdown">
                             <li><a class="dropdown-item" href="https://discord.gg/FEmNcz7QwP" target="_blank">Discord</a></li>
-                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/RSBot" target="_blank">GitHub</a></li>
+                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/OasisBot" target="_blank">GitHub</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -53,9 +53,9 @@ document.addEventListener("DOMContentLoaded", function () {
                             Releases
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="releasesDropdown">
-                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/RSBot/releases/latest" target="_blank">Latest Stable</a></li>
-                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/RSBot/releases" target="_blank">Nightly</a></li>
-                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/Rsbot-Manager/releases/latest" target="_blank">Manager</a></li>
+                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/OasisBot/releases/latest" target="_blank">Latest Stable</a></li>
+                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/OasisBot/releases" target="_blank">Nightly</a></li>
+                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/OasisBot-Manager/releases/latest" target="_blank">Manager</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -63,8 +63,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             Project
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="projectDropdown">
-                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/RSBot" target="_blank">GitHub Repo</a></li>
-                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/RSBot/blob/master/LICENSE" target="_blank">License</a></li>
+                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/OasisBot" target="_blank">GitHub Repo</a></li>
+                            <li><a class="dropdown-item" href="https://github.com/Silkroad-Developer-Community/OasisBot/blob/master/LICENSE" target="_blank">License</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -120,3 +120,4 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+

@@ -1,4 +1,4 @@
-﻿namespace RSBot.Views
+namespace RSBot.Views
 {
     partial class SplashScreen
     {
@@ -68,8 +68,8 @@
             logoLabel.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
             logoLabel.Gradient = new System.Drawing.Color[]
     {
-    System.Drawing.Color.DodgerBlue,
-    System.Drawing.Color.SlateBlue
+    System.Drawing.Color.FromArgb(202, 179, 139),
+    System.Drawing.Color.FromArgb(182, 159, 119)
     };
             logoLabel.GradientAnimation = true;
             logoLabel.Location = new System.Drawing.Point(0, 91);
@@ -90,8 +90,8 @@
             labelVersion.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
             labelVersion.Gradient = new System.Drawing.Color[]
     {
-    System.Drawing.Color.DodgerBlue,
-    System.Drawing.Color.DeepSkyBlue
+    System.Drawing.Color.FromArgb(202, 179, 139),
+    System.Drawing.Color.FromArgb(182, 159, 119)
     };
             labelVersion.GradientAnimation = false;
             labelVersion.Location = new System.Drawing.Point(443, 129);
@@ -170,8 +170,8 @@
             progressLoading.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 162);
             progressLoading.Gradient = new System.Drawing.Color[]
     {
-    System.Drawing.Color.DodgerBlue,
-    System.Drawing.Color.SlateBlue
+    System.Drawing.Color.FromArgb(202, 179, 139),
+    System.Drawing.Color.FromArgb(182, 159, 119)
     };
             progressLoading.HatchType = System.Drawing.Drawing2D.HatchStyle.Percent10;
             progressLoading.Location = new System.Drawing.Point(0, 40);

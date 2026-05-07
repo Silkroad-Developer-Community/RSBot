@@ -1,4 +1,4 @@
-﻿namespace RSBot.Views
+namespace RSBot.Views
 {
     partial class AboutDialog
     {
@@ -50,7 +50,7 @@
             // buttonOk
             // 
             buttonOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-            buttonOk.Color = System.Drawing.Color.DodgerBlue;
+            buttonOk.Color = System.Drawing.Color.FromArgb(202, 179, 139);
             buttonOk.Font = new System.Drawing.Font("Segoe UI Semibold", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             buttonOk.ForeColor = System.Drawing.Color.White;
             buttonOk.Location = new System.Drawing.Point(12, 317);
@@ -90,7 +90,7 @@
             labelName.Name = "labelName";
             labelName.Size = new System.Drawing.Size(61, 25);
             labelName.TabIndex = 4;
-            labelName.Text = "RSBot";
+            labelName.Text = "OasisBot";
             // 
             // labelDescription
             // 
@@ -122,7 +122,7 @@
     System.Drawing.Color.Black
     };
             labelVersion.GradientAnimation = false;
-            labelVersion.Location = new System.Drawing.Point(227, 12);
+            labelVersion.Location = new System.Drawing.Point(280, 12);
             labelVersion.Name = "labelVersion";
             labelVersion.Size = new System.Drawing.Size(46, 19);
             labelVersion.TabIndex = 4;

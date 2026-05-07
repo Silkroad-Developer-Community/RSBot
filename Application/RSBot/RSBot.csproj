@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>disable</Nullable>
@@ -6,10 +6,14 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <OutputPath>.\..\..\Build</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <Description>A open source bot for Silkroad Online</Description>
+    <Description>Open Source Silkroad bot for everyone</Description>
     <Copyright>Copyright © 2026 Silkroad Developer Community</Copyright>
-    <PackageProjectUrl>https://github.com/Silkroad-Developer-Community/RSBot</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Silkroad-Developer-Community/RSBot</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Silkroad-Developer-Community/OasisBot</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Silkroad-Developer-Community/OasisBot</RepositoryUrl>
+    <AssemblyName>OasisBot</AssemblyName>
+    <Title>OasisBot</Title>
+    <Product>OasisBot</Product>
+    <Company>Silkroad Developer Community</Company>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <InformationalVersion>2.10.0</InformationalVersion>
@@ -42,3 +46,4 @@
     <Copy SourceFiles="@(DependencyFiles)" DestinationFolder="..\..\Build\Data\%(RecursiveDir)" />
   </Target>
 </Project>
+

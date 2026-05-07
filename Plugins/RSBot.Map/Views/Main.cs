@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -15,6 +15,7 @@ using RSBot.Core.Objects;
 using RSBot.Core.Objects.Spawn;
 using RSBot.Map.Renderer;
 using RSBot.NavMeshApi.Dungeon;
+using SDUI;
 using SDUI.Controls;
 using Region = RSBot.Core.Objects.Region;
 
@@ -284,7 +285,7 @@ public partial class Main : DoubleBufferedControl
                     var nextPosition = walkScript[i];
 
                     DrawLineAt(graphics, i != 0 ? walkScript[i - 1] : nextPosition, nextPosition, Pens.LightBlue);
-                    DrawCircleAt(graphics, nextPosition, Color.CornflowerBlue.Alpha(150), 4);
+                    DrawCircleAt(graphics, nextPosition, ColorScheme.AccentColor.Alpha(150), 4);
                 }
             }
 

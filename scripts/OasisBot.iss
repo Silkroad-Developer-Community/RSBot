@@ -1,9 +1,9 @@
 [Setup]
-#define AppName "RSBot"
+#define AppName "OasisBot"
 #define AppVersion "2.10.0"
 #define AppPublisher "Silkroad Developer Community"
-#define AppURL "https://github.com/Silkroad-Developer-Community/RSBot"
-#define AppExeName "RSBot.exe"
+#define AppURL "https://github.com/Silkroad-Developer-Community/OasisBot"
+#define AppExeName "OasisBot.exe"
 
 AppName={#AppName}
 AppVersion={#AppVersion}
@@ -15,14 +15,14 @@ DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
 AllowNoIcons=yes
 
-; "PrivilegesRequired=admin" is necessary for RSBot to attach to the game process
+; "PrivilegesRequired=admin" is necessary for OasisBot to attach to the game process
 PrivilegesRequired=admin
 OutputDir=..
-OutputBaseFilename=RSBot-Setup-{#AppVersion}
+OutputBaseFilename=OasisBot-Setup-{#AppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern dark includetitlebar
-AppMutex=RSBotMutex
+AppMutex=OasisBotMutex
 CloseApplications=yes
 
 [Dirs]
@@ -49,3 +49,4 @@ Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(
 [UninstallDelete]
 ; Clean up runtime-generated logs but preserve User settings
 Type: filesandordirs; Name: "{app}\Build\User\Logs"
+

@@ -60,8 +60,8 @@ if ($buildExitCode -eq 0) {
     }
 
     if (!$DoNotStart) {
-        Write-Output "Starting RSBot..."
-        & ".\Build\RSBot.exe"
+        Write-Output "Starting OasisBot..."
+        & ".\Build\OasisBot.exe"
     }
 }
 else {

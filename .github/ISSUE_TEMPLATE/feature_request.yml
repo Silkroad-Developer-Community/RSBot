@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea or a feature for RSBot
+description: Suggest an idea or a feature for OasisBot
 title: "[Feature Request]: "
 labels: ["enhancement"]
 assignees: []
@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ### Have an idea for RSBot? We'd love to hear it!
+        ### Have an idea for OasisBot? We'd love to hear it!
   - type: textarea
     id: problem
     attributes:
@@ -33,7 +33,7 @@ body:
       label: Affected Components
       description: Which parts of the bot would this feature affect?
       options:
-        - label: RSBot (Main Application)
+        - label: OasisBot (Main Application)
         - label: Alchemy
         - label: Lure
         - label: Trade

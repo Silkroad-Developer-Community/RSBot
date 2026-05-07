@@ -1,5 +1,5 @@
 name: Bug report
-description: Create a report to help us improve RSBot
+description: Create a report to help us improve OasisBot
 title: "[Bug]: "
 labels: ["bug"]
 assignees: []
@@ -10,10 +10,10 @@ body:
         ### Thanks for taking the time to fill out this bug report!
         Please fill out the form as completely as possible.
   - type: input
-    id: rsbot-version
+    id: OasisBot-version
     attributes:
-      label: RSBot Version
-      description: What version or commit of RSBot are you using?
+      label: OasisBot Version
+      description: What version or commit of OasisBot are you using?
       placeholder: e.g. v2.3 or commit 7747746
     validations:
       required: true
@@ -54,7 +54,7 @@ body:
       label: Affected Components
       description: Select the parts of the bot that are having issues.
       options:
-        - label: RSBot (Main Application)
+        - label: OasisBot (Main Application)
         - label: Alchemy
         - label: Lure
         - label: Trade

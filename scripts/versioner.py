@@ -55,14 +55,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     csproj = os.path.join("Application", "RSBot", "RSBot.csproj")
-    iss = os.path.join("scripts", "RSBot.iss")
+    iss = os.path.join("scripts", "OasisBot.iss")
 
     if args.version:
         version = args.version
         print(f"Setting version to: {version}")
         update_csproj_version(csproj, version)
         update_iss_version(iss, version)
-        print("Updated RSBot.csproj and RSBot.iss")
+        print("Updated RSBot.csproj and OasisBot.iss")
     elif args.nightly:
         base_version = get_version_from_csproj(csproj)
         if base_version:
@@ -70,7 +70,7 @@ if __name__ == "__main__":
             print(f"Setting nightly version to: {version}")
             # We only update the ISS file for nightlies to keep the CSPROJ clean for the next dev cycle
             update_iss_version(iss, version)
-            print("Updated RSBot.iss with nightly version")
+            print("Updated OasisBot.iss with nightly version")
         else:
             print("Could not find version in csproj")
             exit(1)
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         if version:
             print(f"Syncing version from csproj: {version}")
             update_iss_version(iss, version)
-            print("Updated RSBot.iss")
+            print("Updated OasisBot.iss")
         else:
             print("Could not find version in csproj")
             exit(1)

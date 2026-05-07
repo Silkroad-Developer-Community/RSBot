@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -11,6 +11,7 @@ using RSBot.Core.Event;
 using RSBot.Core.Objects;
 using RSBot.Core.Objects.Spawn;
 using RSBot.Views.Dialog;
+using SDUI;
 using SDUI.Controls;
 
 namespace RSBot.Views;
@@ -198,7 +199,7 @@ public partial class ScriptRecorder : UIWindow
             return;
 
         if (txtScript.Text.Split('\n').Length >= lineNumber)
-            HighlightLine(lineNumber != 0 ? lineNumber + 1 : 0, Color.CornflowerBlue);
+            HighlightLine(lineNumber != 0 ? lineNumber + 1 : 0, ColorScheme.AccentColor);
     }
 
     /// <summary>
@@ -342,7 +343,7 @@ public partial class ScriptRecorder : UIWindow
     {
         btnStartStop.Text = LanguageManager.GetLang("Start");
         labelStatus.Text = LanguageManager.GetLang("Idle");
-        btnStartStop.Color = Color.FromArgb(33, 150, 243);
+        btnStartStop.Color = Color.FromArgb(202, 179, 139);
         TitleColor = btnStartStop.Color;
 
         _recording = false;
@@ -437,7 +438,7 @@ public partial class ScriptRecorder : UIWindow
             labelStatus.Text = LanguageManager.GetLang("Running");
             btnRun.Text = "◘";
             txtScript.ReadOnly = true;
-            TitleColor = Color.DodgerBlue;
+            TitleColor = ColorScheme.AccentColor;
 
             _running = true;
         }

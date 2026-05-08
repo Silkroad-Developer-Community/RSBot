@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema 
@@ -124,6 +124,9 @@ Discord:
 	https://discord.gg/FEmNcz7QwP
 Releases: 
 	https://github.com/Silkroad-Developer-Community/RSBot/releases
+
+Original Authors:
+    ngoedde, SDClowen
   </value>
   </data>
 </root>

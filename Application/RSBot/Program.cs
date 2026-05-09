@@ -5,19 +5,27 @@ using RSBot.Core.Components;
 using RSBot.Core.Event;
 using RSBot.Core.Objects;
 using RSBot.Views;
-using RSBot.Chat;
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using RSBot.General;
+using RSBot.Core.Components.Command;
+using System.Runtime.InteropServices;
 
 namespace RSBot;
 
 internal static class Program
 {
+    [DllImport("kernel32.dll")]
+    static extern IntPtr GetConsoleWindow();
+
+    [DllImport("user32.dll")]
+    static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    private const int SW_HIDE = 0;
+    private const int SW_SHOW = 5;
     public static string AssemblyTitle = Assembly
         .GetExecutingAssembly()
         .GetCustomAttribute<AssemblyProductAttribute>()
@@ -101,6 +109,9 @@ internal static class Program
         }
         else
         {
+            var handle = GetConsoleWindow();
+            ShowWindow(handle, SW_HIDE);
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
@@ -115,68 +126,23 @@ internal static class Program
     private static void RunHeadless()
     {
         //Main mainForm = new Main();
+        EventManager.SubscribeEvent("OnAddLog", (string message, LogLevel level) => Console.WriteLine($"[{level}] {message}"));
+        EventManager.SubscribeEvent("OnChangeStatusText", (string status) => Console.WriteLine($"[Status] {status}"));
+
         BotCL.Initialize(ProfileManager.SelectedProfile);
 
         bool running = true;
         while (running)
         {
             Console.Write("> ");
-            var input = Console.ReadLine()?.ToLower().Split(',');
+            var input = Console.ReadLine()?.Split(',');
             if (input == null || input.Length == 0) continue;
 
-            var command = input[0];
+            var command = input[0].ToLower();
             var args = input.Skip(1).ToArray();
 
-            switch (command)
-            {
-                case "start":
-                    Kernel.Bot?.Start();
-                    Console.WriteLine("Bot started");
-                    break;
-
-                case "stop":
-                    Kernel.Bot?.Stop();
-                    Console.WriteLine("Bot stopped");
-                    break;
-                case "start-client":
-                    _ = GeneralPlugin.Instance.Manager.StartClientAsync();
-                    Console.WriteLine("Client started");
-                    break;
-                case "show":
-                    ClientManager.SetVisible(true);
-                    break;
-                case "hide":
-                    ClientManager.SetVisible(false);
-                    break;
-                case "chat":
-                    HandleChatCommand(args);
-                    break;
-
-                case "status":
-                    Console.WriteLine($"Character: {Game.Player?.Name ?? "Not logged in"}");
-                    Console.WriteLine($"Bot running: {Kernel.Bot?.Running ?? false}");
-                    break;
-
-                default:
-                    Log.Warn($"Unknown Command: {command}");
-                    break;
-            }
+            CLIManager.Execute(command, args);
         }
-    }
-    private static void HandleChatCommand(string[] args)
-    {
-        if (args.Length < 2)
-        {
-            return;
-        }
-
-        if (!Enum.TryParse<ChatType>(args[0], true, out var type)) return;
-
-        var message = args[1];
-        var receiver = args.Length > 2 ? args[2] : null;
-
-        ChatManager.Send(type, message, receiver);
-        Console.WriteLine($"Message ({type}): {message}.");
     }
     private static void RunOptions(CommandLineOptions options)
     {

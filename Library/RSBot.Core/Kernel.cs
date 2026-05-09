@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +6,7 @@ using RSBot.Core.Components;
 using RSBot.Core.Event;
 using RSBot.Core.Network;
 using RSBot.Core.Plugins;
+using RSBot.Core.Components.Command;
 
 namespace RSBot.Core;
 
@@ -104,6 +105,11 @@ public static class Kernel
         //Network handlers/hooks
         RegisterNetworkHandlers();
         RegisterNetworkHooks();
+
+        //CLI Commands
+        CLIManager.Register(new StartBotCLICommand());
+        CLIManager.Register(new StopBotCLICommand());
+        CLIManager.Register(new StatusCLICommand());
 
         _updaterTokenSource = new CancellationTokenSource();
 

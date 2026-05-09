@@ -1,5 +1,6 @@
-﻿using RSBot.Core.Plugins;
+using RSBot.Core.Plugins;
 using RSBot.General.Components;
+using RSBot.Core.Components.Command;
 
 namespace RSBot.General
 {
@@ -14,6 +15,10 @@ namespace RSBot.General
             Instance = this;
             Manager = new GeneralManager();
             Accounts.Load();
+
+            CLIManager.Register(new StartClientCommand());
+            CLIManager.Register(new ShowClientCommand());
+            CLIManager.Register(new HideClientCommand());
         }
         public void OnLoadCharacter() { }
     }

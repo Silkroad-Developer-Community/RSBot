@@ -22,7 +22,7 @@ namespace RSBot.Python.Components.Loader
 
             if (pythonDll == null)
             {
-                log("[Python-API] Couldn´t find any Python-DLL!");
+                log("[Python-API] Couldn't find any Python-DLL!");
                 return;
             }
 
@@ -60,7 +60,7 @@ from RSBot.Python.Components.API.GUI import WFAPI
 RSBot.GUI = WFAPI.GUI
 ");
                     IsInitialized = true;
-                    log("[Python-API] Python initialised and created RSBot-Modul.");
+                    log("[Python-API] Python initialised and created RSBot Module.");
                 }
                 catch (PythonException ex)
                 {

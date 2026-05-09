@@ -102,7 +102,7 @@ public class Bot
         Botbase.Stop();
         Running = false;
 
-        Log.Notify($"Stoped bot {Botbase.Name}");
+        Log.Notify($"Stopped bot {Botbase.Name}");
         Log.Status("Bot stopped");
     }
 }

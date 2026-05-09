@@ -16,8 +16,7 @@ namespace RSBot.Python.Components.API.ModuleLoader
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine("# Auto-generated .pyi stub for pycross");
-            sb.AppendLine("# DO NOT EDIT – generated from C# plugin classes");
+            sb.AppendLine("# DO NOT EDIT - generated from C# plugin classes");
             sb.AppendLine($"# Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             sb.AppendLine();
 

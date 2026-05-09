@@ -19,6 +19,7 @@ internal static class NavigationManager
     private static readonly object _linkageLock = new();
     private static NavigationLinkage _linkage;
     private static List<NodePathStep> _activePath;
+    private static Position _targetPosition;
 
     // Persisted metadata for logging after clearing heavy linkage data
     private static string _linkageVersion;
@@ -258,6 +259,7 @@ internal static class NavigationManager
         lock (_linkageLock)
         {
             _activePath = path;
+            _targetPosition = targetPos;
             _linkage = null; // Clear linkage data once path is cached to save memory
         }
         GC.Collect();
@@ -409,17 +411,19 @@ internal static class NavigationManager
     public static string GenerateRBSFile()
     {
         List<NodePathStep> activePath;
+        Position targetPos;
+
         lock (_linkageLock)
         {
             if (_activePath == null || _activePath.Count == 0)
                 return null;
 
             activePath = new List<NodePathStep>(_activePath);
+            targetPos = _targetPosition;
             _activePath = null; // Clear path after generation
         }
 
-        var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        var fileName = $"{timestamp}.rbs";
+        var fileName = $"dynamic_walk_{DateTime.Now:yyyyMMdd_HHmmss}.rbs";
         var dynamicScriptsDir = Path.Combine(ScriptManager.InitialDirectory, "Dynamic");
 
         if (!Directory.Exists(dynamicScriptsDir))
@@ -428,26 +432,60 @@ internal static class NavigationManager
         var filePath = Path.Combine(dynamicScriptsDir, fileName);
         var rbsLines = new List<string>();
 
+        var lastPos = Game.Player.Movement.Source;
+
         foreach (var step in activePath)
         {
             if (step.Edge.Type == "teleport")
             {
                 rbsLines.Add($"teleport {step.Edge.Npc} {step.Edge.Dest}");
+                lastPos = step.Position;
             }
             else
             {
-                // move XOffset YOffset ZOffset XSector YSector
-                rbsLines.Add(
-                    $"move {step.Position.XOffset} {step.Position.YOffset} {step.Position.ZOffset} {step.Position.Region.X} {step.Position.Region.Y}"
-                );
+                AddMoveCommands(rbsLines, lastPos, step.Position);
+                lastPos = step.Position;
             }
         }
+
+        // Final link to the actual target position
+        AddMoveCommands(rbsLines, lastPos, targetPos);
 
         File.WriteAllLines(filePath, rbsLines);
         Log.Notify($"Generated dynamic walk script: {fileName}");
         LogLinkageMetadata();
 
         return filePath;
+    }
+
+    /// <summary>
+    /// Adds interpolated move commands to the list.
+    /// </summary>
+    private static void AddMoveCommands(List<string> rbsLines, Position start, Position end)
+    {
+        var distance = start.DistanceTo(end);
+        if (distance < 1)
+            return;
+
+        if (distance <= 50)
+        {
+            rbsLines.Add($"move {end.XOffset} {end.YOffset} {end.ZOffset} {end.Region.X} {end.Region.Y}");
+            return;
+        }
+
+        var segments = (int)Math.Ceiling(distance / 50.0);
+        for (var i = 1; i <= segments; i++)
+        {
+            var t = (float)i / segments;
+            var x = start.X + (end.X - start.X) * t;
+            var y = start.Y + (end.Y - start.Y) * t;
+            var z = start.ZOffset + (end.ZOffset - start.ZOffset) * t;
+
+            var interpolatedPos = new Position(x, y, start.Region) { ZOffset = z };
+            rbsLines.Add(
+                $"move {interpolatedPos.XOffset} {interpolatedPos.YOffset} {interpolatedPos.ZOffset} {interpolatedPos.Region.X} {interpolatedPos.Region.Y}"
+            );
+        }
     }
 
     private class SemanticEdge

@@ -1,8 +1,3 @@
-using System;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading;
-using System.Windows.Forms;
 using RSBot.Core;
 using RSBot.Core.Client.ReferenceObjects;
 using RSBot.Core.Components;
@@ -10,8 +5,11 @@ using RSBot.Core.Event;
 using RSBot.Core.Extensions;
 using RSBot.Core.Objects;
 using RSBot.Core.Objects.Skill;
-using RSBot.Skills.Components;
 using SDUI.Controls;
+using System;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows.Forms;
 using CheckBox = SDUI.Controls.CheckBox;
 using ListViewExtensions = RSBot.Core.Extensions.ListViewExtensions;
 
@@ -50,8 +48,6 @@ public partial class Main : DoubleBufferedControl
 
         EventManager.SubscribeEvent("OnAddBuff", new Action<SkillInfo>(OnAddBuff));
         EventManager.SubscribeEvent("OnRemoveBuff", new Action<SkillInfo>(OnRemoveBuff));
-        EventManager.SubscribeEvent("OnResurrectionRequest", OnResurrectionRequest);
-        EventManager.SubscribeEvent("OnExpSpUpdate", OnSpUpdated);
         EventManager.SubscribeEvent("OnAddItemPerk", new Action<uint, uint>(OnAddItemPerk));
         EventManager.SubscribeEvent("OnRemoveItemPerk", new Action<uint, ItemPerk>(OnRemoveItemPerk));
     }
@@ -63,6 +59,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="removedPerk">The removed perk.</param>
     private void OnRemoveItemPerk(uint targetId, ItemPerk removedPerk)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<uint, ItemPerk>(OnRemoveItemPerk), targetId, removedPerk);
+            return;
+        }
         if (targetId != Game.Player.UniqueId || removedPerk == null)
             return;
 
@@ -85,6 +86,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="token">The token.</param>
     private void OnAddItemPerk(uint targetId, uint token)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<uint, uint>(OnAddItemPerk), targetId, token);
+            return;
+        }
         if (targetId != Game.Player.UniqueId)
             return;
 
@@ -96,35 +102,7 @@ public partial class Main : DoubleBufferedControl
         item.LoadSkillImage();
     }
 
-    /// <summary>
-    ///     Will be triggered if EXP/SP were gained. Increases the selected mastery level (if available)
-    /// </summary>
-    private void OnSpUpdated()
-    {
-        if (_selectedMastery == null || !checkLearnMastery.Checked)
-            return;
-
-        while (_selectedMastery.Level + numMasteryGap.Value < Game.Player.Level)
-        {
-            if (!checkLearnMasteryBotStopped.Checked && !Kernel.Bot.Running)
-                break;
-
-            var nextMasteryLevel = Game.ReferenceManager.GetRefLevel((byte)(_selectedMastery.Level + 1));
-
-            if (nextMasteryLevel.Exp_M > Game.Player.SkillPoints)
-            {
-                Log.Debug(
-                    $"Auto. upping mastery cancelled due to insufficient skill points. Required: {nextMasteryLevel.Exp_M}"
-                );
-
-                break;
-            }
-
-            Log.Notify($"Auto. train mastery [{_selectedMastery.Record.Name} to lv. {nextMasteryLevel}");
-            LearnMasteryHandler.LearnMastery(_selectedMastery.Record.ID);
-            Thread.Sleep(500);
-        }
-    }
+    
 
     /// <summary>
     ///     Loads the settings.
@@ -209,84 +187,6 @@ public partial class Main : DoubleBufferedControl
     {
         if (_settingsLoaded)
             ApplySettings();
-    }
-
-    /// <summary>
-    ///     Applies the attack skills.
-    /// </summary>
-    private void ApplyAttackSkills()
-    {
-        foreach (var collection in SkillManager.Skills.Values)
-            collection.Clear();
-
-        for (var i = 0; i < comboMonsterType.Items.Count; i++)
-        {
-            var skillIds = PlayerConfig.GetArray<uint>("RSBot.Skills.Attacks_" + i);
-
-            foreach (var skillId in skillIds)
-            {
-                var skillInfo = Game.Player.Skills.GetSkillInfoById(skillId);
-                if (skillInfo == null)
-                    continue;
-
-                switch (i)
-                {
-                    case 1:
-                        SkillManager.Skills[MonsterRarity.Champion].Add(skillInfo);
-                        continue;
-                    case 2:
-                        SkillManager.Skills[MonsterRarity.Giant].Add(skillInfo);
-                        continue;
-                    case 3:
-                        SkillManager.Skills[MonsterRarity.GeneralParty].Add(skillInfo);
-                        continue;
-                    case 4:
-                        SkillManager.Skills[MonsterRarity.ChampionParty].Add(skillInfo);
-                        continue;
-                    case 5:
-                        SkillManager.Skills[MonsterRarity.GiantParty].Add(skillInfo);
-                        continue;
-                    case 6:
-                        SkillManager.Skills[MonsterRarity.Elite].Add(skillInfo);
-                        continue;
-                    case 7:
-                        SkillManager.Skills[MonsterRarity.EliteStrong].Add(skillInfo);
-                        continue;
-                    case 8:
-                        SkillManager.Skills[MonsterRarity.Unique].Add(skillInfo);
-                        continue;
-                    case 9:
-                        SkillManager.Skills[MonsterRarity.Event].Add(skillInfo);
-                        continue;
-                    default:
-                        SkillManager.Skills[MonsterRarity.General].Add(skillInfo);
-                        continue;
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    ///     Applies the buff skills.
-    /// </summary>
-    private void ApplyBuffSkills()
-    {
-        SkillManager.Buffs.Clear();
-
-        Game.Player.TryGetAbilitySkills(out var abilitySkills);
-
-        foreach (var buffId in PlayerConfig.GetArray<uint>("RSBot.Skills.Buffs"))
-        {
-            var skillInfo = Game.Player.Skills.GetSkillInfoById(buffId);
-            if (skillInfo == null)
-            {
-                skillInfo = abilitySkills.FirstOrDefault(p => p.Id == buffId);
-                if (skillInfo == null)
-                    continue;
-            }
-
-            SkillManager.Buffs.Add(skillInfo);
-        }
     }
 
     /// <summary>
@@ -473,7 +373,6 @@ public partial class Main : DoubleBufferedControl
             if (player == null)
                 return;
 
-            LoadTeleportSkills();
             LoadResurrectionSkills();
             LoadTeleportSkills();
             LoadImbues();
@@ -560,9 +459,8 @@ public partial class Main : DoubleBufferedControl
     {
         var savedSkills = listAttackingSkills.Items.Cast<ListViewItem>().Select(p => ((SkillInfo)p.Tag).Id).ToArray();
 
-        PlayerConfig.SetArray("RSBot.Skills.Attacks_" + comboMonsterType.SelectedIndex, savedSkills);
-
-        ApplyAttackSkills();
+        SkillsManager.SaveSkills("RSBot.Skills.Attacks_" + comboMonsterType.SelectedIndex, savedSkills);
+        SkillsManager.ApplyAttackSkills();
     }
 
     /// <summary>
@@ -572,9 +470,8 @@ public partial class Main : DoubleBufferedControl
     {
         var savedBuffs = listBuffs.Items.Cast<ListViewItem>().Select(p => ((SkillInfo)p.Tag).Id).ToArray();
 
-        PlayerConfig.SetArray("RSBot.Skills.Buffs", savedBuffs);
-
-        ApplyBuffSkills();
+        SkillsManager.SaveSkills("RSBot.Skills.Buffs", savedBuffs);
+        SkillsManager.ApplyBuffSkills();
     }
 
     /// <summary>
@@ -583,6 +480,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="buffInfo">The added <see cref="BuffInfo" /></param>
     private void OnAddBuff(SkillInfo buffInfo)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<SkillInfo>(OnAddBuff), buffInfo);
+            return;
+        }
         try
         {
             var item = new ListViewItem { Text = buffInfo.Record.GetRealName(), Tag = buffInfo };
@@ -601,6 +503,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="buffInfo">The removed <see cref="BuffInfo" /></param>
     private void OnRemoveBuff(SkillInfo removingBuff)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<SkillInfo>(OnRemoveBuff), removingBuff);
+            return;
+        }
         try
         {
             for (var i = 0; i < listActiveBuffs.Items.Count; i++)
@@ -625,86 +532,16 @@ public partial class Main : DoubleBufferedControl
     }
 
     /// <summary>
-    ///     Check the skills upgraded or withdrawn
-    /// </summary>
-    /// <param name="oldSkill">The old skill</param>
-    /// <param name="newSkill">The new skill</param>
-    private void CheckSkillWithdrawnOrUpgraded(SkillInfo oldSkill, SkillInfo newSkill)
-    {
-        for (var i = 0; i < comboMonsterType.Items.Count; i++)
-        {
-            var skills = PlayerConfig.GetArray<uint>($"RSBot.Skills.Attacks_{i}").ToList();
-            var index = skills.IndexOf(oldSkill.Id);
-            if (index == -1)
-                continue;
-
-            if (oldSkill.Id == newSkill.Id)
-                skills.RemoveAt(index);
-            else
-                skills[index] = newSkill.Id;
-
-            PlayerConfig.SetArray($"RSBot.Skills.Attacks_{i}", skills);
-        }
-
-        var buffs = PlayerConfig.GetArray<uint>("RSBot.Skills.Buffs").ToList();
-        var buffIndex = buffs.IndexOf(oldSkill.Id);
-        if (buffIndex != -1)
-        {
-            // remove skill
-            if (newSkill.Id == oldSkill.Id)
-                buffs.RemoveAt(buffIndex);
-            else
-                buffs[buffIndex] = newSkill.Id;
-
-            PlayerConfig.SetArray("RSBot.Skills.Buffs", buffs);
-        }
-
-        var resurrectionSkill = PlayerConfig.Get<uint>("RSBot.Skills.ResurrectionSkill");
-        if (resurrectionSkill == oldSkill.Id)
-        {
-            if (oldSkill.Id == newSkill.Id)
-                SkillManager.ResurrectionSkill = null;
-            else
-                resurrectionSkill = newSkill.Id;
-
-            PlayerConfig.Set("RSBot.Skills.ResurrectionSkill", resurrectionSkill);
-        }
-
-        var selectedImbue = PlayerConfig.Get<uint>("RSBot.Skills.Imbue");
-        if (selectedImbue == oldSkill.Id)
-        {
-            if (oldSkill.Id == newSkill.Id)
-                SkillManager.ImbueSkill = null;
-            else
-                selectedImbue = newSkill.Id;
-
-            PlayerConfig.Set("RSBot.Skills.Imbue", selectedImbue);
-        }
-
-        var selectedTeleportSkill = PlayerConfig.Get<uint>("RSBot.Skills.TeleportSkill");
-        if (selectedTeleportSkill == oldSkill.Id)
-        {
-            if (oldSkill.Id == newSkill.Id)
-                SkillManager.TeleportSkill = null;
-            else
-                selectedTeleportSkill = newSkill.Id;
-
-            PlayerConfig.Set("RSBot.Skills.TeleportSkill", selectedTeleportSkill);
-        }
-
-        LoadSkills();
-        ApplyAttackSkills();
-        ApplyBuffSkills();
-
-        PlayerConfig.Save();
-    }
-
-    /// <summary>
     ///     Call after skill learned
     /// </summary>
     /// <param name="learnedSkill"></param>
     private void OnSkillLearned(SkillInfo learnedSkill)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<SkillInfo>(OnSkillLearned), learnedSkill);
+            return;
+        }
         Log.NotifyLang("SkillLearned", learnedSkill.Record.GetRealName());
         LoadSkills();
     }
@@ -716,9 +553,12 @@ public partial class Main : DoubleBufferedControl
     /// <param name="newSkill">The new skill.</param>
     private void OnSkillUpgraded(SkillInfo oldSkill, SkillInfo newSkill)
     {
-        Log.NotifyLang("SkillUpgraded", newSkill);
-
-        CheckSkillWithdrawnOrUpgraded(oldSkill, newSkill);
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<SkillInfo,SkillInfo>(OnSkillUpgraded), oldSkill, newSkill);
+            return;
+        }
+        LoadSkills();
     }
 
     /// <summary>
@@ -728,9 +568,12 @@ public partial class Main : DoubleBufferedControl
     /// <param name="newSkill">The new skill.</param>
     private void OnWithdrawSkill(SkillInfo oldSkill, SkillInfo newSkill)
     {
-        Log.NotifyLang("SkillWithdrawn", oldSkill);
-
-        CheckSkillWithdrawnOrUpgraded(oldSkill, newSkill);
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<SkillInfo, SkillInfo>(OnWithdrawSkill), oldSkill, newSkill);
+            return;
+        }
+        LoadSkills();
     }
 
     /// <summary>
@@ -739,6 +582,11 @@ public partial class Main : DoubleBufferedControl
     /// <param name="info">The information.</param>
     private void OnLearnSkillMastery(MasteryInfo info)
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(new Action<MasteryInfo>(OnLearnSkillMastery), info);
+            return;
+        }
         Log.NotifyLang("MasteryUpgraded", info.Record.Name);
 
         LoadSkills();
@@ -749,24 +597,16 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     private void OnLoadCharacter()
     {
+        if (this.InvokeRequired)
+        {
+            this.Invoke(OnLoadCharacter);
+            return;
+        }
         comboMonsterType.SelectedIndex = 0;
 
         LoadSkills();
 
-        ApplyAttackSkills();
-        ApplyBuffSkills();
-
         listActiveBuffs.Items.Clear();
-    }
-
-    /// <summary>
-    ///     Core_s the on resurrection request
-    /// </summary>
-    private void OnResurrectionRequest()
-    {
-        const string key = "RSBot.Skills.";
-        if (Game.AcceptanceRequest != null && PlayerConfig.Get<bool>(key + checkAcceptResurrection.Name))
-            Game.AcceptanceRequest.Accept();
     }
 
     /// <summary>
@@ -854,8 +694,7 @@ public partial class Main : DoubleBufferedControl
         if (comboImbue.SelectedIndex > 0)
             imbue = comboImbue.SelectedItem as SkillInfo;
 
-        SkillManager.ImbueSkill = imbue;
-        PlayerConfig.Set("RSBot.Skills.Imbue", imbue == null ? 0 : imbue.Id);
+        SkillsManager.SetImbueSkill(imbue);
     }
 
     /// <summary>
@@ -882,9 +721,7 @@ public partial class Main : DoubleBufferedControl
 
         if (comboResurrectionSkill.SelectedIndex > 0)
             skill = comboResurrectionSkill.SelectedItem as SkillInfo;
-
-        SkillManager.ResurrectionSkill = skill;
-        PlayerConfig.Set("RSBot.Skills.ResurrectionSkill", skill == null ? 0 : skill.Id);
+        SkillsManager.SetResurrectionSkill(skill);
     }
 
     /// <summary>
@@ -964,7 +801,7 @@ public partial class Main : DoubleBufferedControl
         var selectedItem = (MasteryComboBoxItem)comboLearnMastery.SelectedItem;
         _selectedMastery = selectedItem;
 
-        PlayerConfig.Set("RSBot.Skills.selectedMastery", selectedItem.Record.NameCode);
+        SkillsManager.SetMasteryToLearn(selectedItem.Record.NameCode);
     }
 
     private void listSkills_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -1060,9 +897,7 @@ public partial class Main : DoubleBufferedControl
         if (comboTeleportSkill.SelectedItem is not TeleportSkillComboBoxItem comboItem)
             return;
 
-        PlayerConfig.Set("RSBot.Skills.TeleportSkill", comboItem.Record.ID);
-
-        SkillManager.TeleportSkill = Game.Player.Skills.GetSkillInfoById(comboItem.Record.ID);
+        SkillsManager.SetTeleportSkill(comboItem.Record.ID);
     }
 
     /// <summary>

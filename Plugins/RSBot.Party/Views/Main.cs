@@ -68,7 +68,6 @@ public partial class Main : DoubleBufferedControl
     private void SubscribeEvents()
     {
         EventManager.SubscribeEvent("OnLoadCharacter", OnLoadCharacter);
-        EventManager.SubscribeEvent("OnEnterGame", OnEnterGame);
         EventManager.SubscribeEvent("OnCreatePartyEntry", OnCreatePartyEntry);
         EventManager.SubscribeEvent("OnChangePartyEntry", OnChangePartyEntry);
         EventManager.SubscribeEvent("OnDeletePartyEntry", OnDeletePartyEntry);
@@ -121,7 +120,7 @@ public partial class Main : DoubleBufferedControl
     /// <returns>The groups</returns>
     private string[] LoadBuffingGroups()
     {
-        return PlayerConfig.GetArray<string>("RSBot.Party.Buffing.Groups");
+        return PartyManager.GetBuffingGroups();
     }
 
     /// <summary>
@@ -129,10 +128,7 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     private void SaveBuffingGroups()
     {
-        PlayerConfig.SetArray(
-            "RSBot.Party.Buffing.Groups",
-            listViewGroups.Items.Cast<ListViewItem>().Select(p => p.Text)
-        );
+        PartyManager.SaveBuffingGroups(listViewGroups.Items.Cast<ListViewItem>().Select(p => p.Text));
     }
 
     /// <summary>
@@ -143,7 +139,7 @@ public partial class Main : DoubleBufferedControl
     {
         var buffingMembers = new List<BuffingPartyMember>();
 
-        var settings = PlayerConfig.Get("RSBot.Party.Buffing", string.Empty);
+        var settings = PartyManager.GetBuffingMembers();
         var collection = settings.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var item in collection)
@@ -162,10 +158,7 @@ public partial class Main : DoubleBufferedControl
         foreach (var item in _buffings)
             stringBuilder.Append(item.Serialize());
 
-        PlayerConfig.Set("RSBot.Party.Buffing", stringBuilder.ToString());
-        PlayerConfig.Save();
-
-        EventManager.FireEvent("OnPartyBuffSettingsChanged");
+        PartyManager.SaveBuffingPartyMembers(stringBuilder.ToString());
     }
 
     /// <summary>
@@ -173,12 +166,7 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     private void SaveAutoPartyPlayerList()
     {
-        PlayerConfig.SetArray(
-            "RSBot.Party.AutoPartyList",
-            listAutoParty.Items.OfType<ListViewItem>().Select(p => p.Text).ToArray()
-        );
-
-        Bundle.Container.Refresh();
+        PartyManager.SaveAutoPartyPlayerList(listAutoParty.Items.OfType<ListViewItem>().Select(p => p.Text));
     }
 
     /// <summary>
@@ -186,12 +174,9 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     private void SaveCommandPlayersList()
     {
-        PlayerConfig.SetArray(
-            "RSBot.Party.Commands.PlayersList",
+        PartyManager.SaveCommandPlayersList(
             listCommandPlayers.Items.OfType<ListViewItem>().Select(p => p.Text).ToArray()
         );
-
-        Bundle.Container.Refresh();
     }
 
     /// <summary>
@@ -326,7 +311,7 @@ public partial class Main : DoubleBufferedControl
     {
         listViewGroups.Items.Clear();
 
-        var selectedGroup = PlayerConfig.Get("RSBot.Party.Buffing.SelectedGroup", "Default");
+        var selectedGroup = PartyManager.GetSelectedGroup();
 
         LoadBuffingMembers();
         var groups = LoadBuffingGroups();
@@ -355,18 +340,6 @@ public partial class Main : DoubleBufferedControl
         }
 
         RefreshGroupMembers();
-    }
-
-    private async void OnEnterGame()
-    {
-        await Task.Delay(5000);
-
-        if (
-            Game.Ready
-            && Bundle.Container.PartyMatching.Config.AutoReform
-            && !Bundle.Container.PartyMatching.HasMatchingEntry
-        )
-            Bundle.Container.PartyMatching.Create();
     }
 
     /// <summary>
@@ -519,16 +492,11 @@ public partial class Main : DoubleBufferedControl
         )
             lvPartyMatching.Items.Remove(lvPartyMatching.Items[0]);
 
-        Bundle.Container.PartyMatching.Id = 0;
-
         btnPartyMatchForm.Enabled = true;
         btnPartyMatchChangeEntry.Enabled = false;
         btnPartyMatchDeleteEntry.Enabled = false;
         btnJoinFormedParty.Enabled = true;
         grbAutoPartySettings.Enabled = true;
-
-        if (Game.Ready && Bundle.Container.PartyMatching.Config.AutoReform)
-            Bundle.Container.PartyMatching.Create();
     }
 
     private void OnCreatePartyEntry()
@@ -579,14 +547,6 @@ public partial class Main : DoubleBufferedControl
         if (member.Name != Game.Player.Name)
         {
             listParty.Items.RemoveByKey(member.Name);
-
-            if (Bundle.Container.PartyMatching.Config.AutoReform)
-                if (
-                    Game.Party != null
-                    && !Bundle.Container.PartyMatching.HasMatchingEntry
-                    && Game.Party.Members?.Count < Game.Party.Settings.MaxMember
-                )
-                    Bundle.Container.PartyMatching.Create();
         }
         else
             OnPartyDismiss();
@@ -635,7 +595,9 @@ public partial class Main : DoubleBufferedControl
     /// </summary>
     public void OnPartyDismiss()
     {
-        Bundle.Container.PartyMatching.HasMatchingEntry = false;
+        if (!Game.Ready)
+            return;
+
         btnLeaveParty.Enabled = false;
         menuLeave.Enabled = false;
         lblLeader.Text = LanguageManager.GetLang("NotInParty");
@@ -652,7 +614,7 @@ public partial class Main : DoubleBufferedControl
     /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
     private void btnLeaveParty_Click(object sender, EventArgs e)
     {
-        Game.Party.Leave();
+        PartyManager.LeaveParty();
     }
 
     /// <summary>
@@ -665,11 +627,9 @@ public partial class Main : DoubleBufferedControl
         if (!_applySettings)
             return;
 
-        PlayerConfig.Set("RSBot.Party.EXPAutoShare", checkAutoExpAutoShare.Checked);
-        PlayerConfig.Set("RSBot.Party.ItemAutoShare", checkAutoItemAutoShare.Checked);
-        PlayerConfig.Set("RSBot.Party.AllowInvitations", checkAutoAllowInvitations.Checked);
-
-        Bundle.Container.AutoParty.Refresh();
+        PartyManager.SetPartyExpAutoShare(checkAutoExpAutoShare.Checked);
+        PartyManager.SetPartyItemAutoShare(checkAutoItemAutoShare.Checked);
+        PartyManager.SetPartyAllowInvites(checkAutoAllowInvitations.Checked);
     }
 
     /// <summary>
@@ -679,8 +639,8 @@ public partial class Main : DoubleBufferedControl
     /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
     private void menuBanish_Click(object sender, EventArgs e)
     {
-        if (listParty.SelectedItems.Count == 1 && Game.Party.IsLeader)
-            Game.Party.GetMemberByName(listParty.SelectedItems[0].Text)?.Banish();
+        if (listParty.SelectedItems.Count == 1)
+            PartyManager.BanishMemberFromParty(listParty.SelectedItems[0].Text);
     }
 
     /// <summary>
@@ -728,21 +688,19 @@ public partial class Main : DoubleBufferedControl
         if (!_applySettings)
             return;
 
-        PlayerConfig.Set("RSBot.Party.AcceptAll", checkAcceptAll.Checked);
-        PlayerConfig.Set("RSBot.Party.AcceptList", checkAcceptFromList.Checked);
-        PlayerConfig.Set("RSBot.Party.InviteAll", checkInviteAll.Checked);
-        PlayerConfig.Set("RSBot.Party.InviteList", checkInviteFromList.Checked);
-        PlayerConfig.Set("RSBot.Party.AtTrainingPlace", checkAcceptAtTrainingPlace.Checked);
-        PlayerConfig.Set("RSBot.Party.AcceptIfBotStopped", checkAcceptIfBotStopped.Checked);
-        PlayerConfig.Set("RSBot.Party.LeaveIfMasterNot", checkBoxLeaveIfMasterNot.Checked);
-        PlayerConfig.Set("RSBot.Party.LeaveIfMasterNotName", textBoxLeaveIfMasterNotName.Text);
+        PartyManager.SetPartyAutoAcceptInvitesAll(checkAcceptAll.Checked);
+        PartyManager.SetPartyAutoAcceptInvitesFromList(checkAcceptFromList.Checked);
+        PartyManager.SetPartyAutoInviteAll(checkInviteAll.Checked);
+        PartyManager.SetPartyAutoInviteList(checkInviteFromList.Checked);
+        PartyManager.SetPartyAutoAcceptAtTrainingPlace(checkAcceptAtTrainingPlace.Checked);
+        PartyManager.SetPartyAutoAcceptIfBotStopped(checkAcceptIfBotStopped.Checked);
+        PartyManager.SetPartyAutoLeaveIfMasterNot(checkBoxLeaveIfMasterNot.Checked);
+        PartyManager.SetPartyAutoLeaveMaster(textBoxLeaveIfMasterNotName.Text);
 
         textBoxLeaveIfMasterNotName.Enabled = !checkBoxLeaveIfMasterNot.Checked;
 
-        PlayerConfig.Set("RSBot.Party.Commands.ListenFromMaster", checkBoxListenMasterCommands.Checked);
-        PlayerConfig.Set("RSBot.Party.Commands.ListenOnlyList", checkBoxListenCommandsOnlyList.Checked);
-
-        Bundle.Container.Refresh();
+        PartyManager.SetPartyCommandListenFromMaster(checkBoxListenMasterCommands.Checked);
+        PartyManager.SetPartyCommandListenFromList(checkBoxListenCommandsOnlyList.Checked);
     }
 
     /// <summary>
@@ -817,8 +775,7 @@ public partial class Main : DoubleBufferedControl
 
     private void btnPartyMatchDeleteEntry_Click(object sender, EventArgs e)
     {
-        Bundle.Container.PartyMatching.Config.AutoReform = false;
-        Bundle.Container.PartyMatching.Delete();
+        PartyManager.DeletePartyMatchingEntry();
     }
 
     private void btnPartyRefresh_Click(object sender, EventArgs e)
@@ -1177,16 +1134,14 @@ public partial class Main : DoubleBufferedControl
 
     private void buttonConfirmJoinConfig_Click(object sender, EventArgs e)
     {
-        PlayerConfig.Set("RSBot.Party.AutoJoin.ByName", checkBoxJoinByName.Checked);
-        PlayerConfig.Set("RSBot.Party.AutoJoin.ByTitle", checkBoxJoinByTitle.Checked);
+        PartyManager.SetPartyAutoJoinByName(checkBoxJoinByName.Checked);
+        PartyManager.SetPartyAutoJoinByTitle(checkBoxJoinByTitle.Checked);
 
         if (checkBoxJoinByName.Checked)
-            PlayerConfig.Set("RSBot.Party.AutoJoin.Name", textBoxJoinByName.Text);
+            PartyManager.SetPartyAutoJoinName(textBoxJoinByName.Text);
 
         if (checkBoxJoinByTitle.Checked)
-            PlayerConfig.Set("RSBot.Party.AutoJoin.Title", textBoxJoinByTitle.Text);
-
-        Bundle.Container.Refresh();
+            PartyManager.SetPartyAutoJoinTitle(textBoxJoinByTitle.Text);
 
         buttonAutoJoinConfig.Color = Color.Transparent;
         topPartyPanel.Height = 47;
@@ -1194,9 +1149,7 @@ public partial class Main : DoubleBufferedControl
 
     private void checkBoxFollowMaster_CheckedChanged(object sender, EventArgs e)
     {
-        PlayerConfig.Set("RSBot.Party.AlwaysFollowPartyMaster", checkBoxFollowMaster.Checked);
-
-        Bundle.Container.Refresh();
+        PartyManager.SetFollowMaster(checkBoxFollowMaster.Checked);
     }
 
     /// <summary>

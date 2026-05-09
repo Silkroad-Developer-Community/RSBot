@@ -103,7 +103,7 @@ public class StatPointsHandler
     }
 
     /// <summary>
-    ///     Sends the STR increase packet to the server
+    ///     Sends the INT increase packet to the server
     /// </summary>
     private static void IncreaseInt()
     {

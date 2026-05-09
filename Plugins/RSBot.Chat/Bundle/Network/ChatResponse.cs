@@ -1,11 +1,13 @@
 ﻿using RSBot.Chat.Views;
 using RSBot.Core;
 using RSBot.Core.Components;
+using RSBot.Core.Event;
 using RSBot.Core.Extensions;
 using RSBot.Core.Network;
 using RSBot.Core.Objects;
 using RSBot.Core.Objects.Spawn;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text.RegularExpressions;
 
 namespace RSBot.Chat.Network;
@@ -51,12 +53,11 @@ internal class ChatResponse : IPacketHandler
                 {
                     if (!SpawnManager.TryGetEntity<SpawnedPlayer>(senderId, out var player))
                         return;
-
-                    View.Instance.AppendMessage(message, player.Name, ChatType.All);
+                    EventManager.FireEvent("OnMessageReceived", message, player.Name, ChatType.All);
                 }
                 else
                 {
-                    View.Instance.AppendMessage(message, Game.Player.Name, ChatType.All);
+                    EventManager.FireEvent("OnMessageReceived", message, Game.Player.Name, ChatType.All);
                 }
 
                 break;

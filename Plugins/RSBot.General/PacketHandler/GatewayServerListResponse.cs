@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using RSBot.Core;
+using RSBot.Core.Event;
 using RSBot.Core.Network;
 using RSBot.General.Components;
 using Server = RSBot.General.Models.Server;
@@ -98,6 +99,7 @@ internal class GatewayServerListResponse : IPacketHandler
                 packet.ReadByte(); // FarmId
 
             Log.Notify($"Found server: {serverName} ({state})");
+            EventManager.FireEvent("OnServerListUpdated");
         }
 
         AutoLogin.Handle();

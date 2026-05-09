@@ -98,6 +98,31 @@ public class ReferenceManager
         worker.ReportProgress(100, "Done");
         EventManager.FireEvent("OnLoadGameData");
     }
+    public void Load()
+    {
+        var sw = Stopwatch.StartNew();
+
+        LoadClientInfo();
+        LoadMapInfo();
+        LoadTextData();
+        LoadCharacterData();
+        LoadItemData();
+        LoadSkillData();
+        LoadQuestData();
+        LoadShopData();
+        LoadTeleportData();
+        LoadAlchemyData();
+        LoadOptLevelData();
+        LoadLevelData();
+        LoadEventRewardData();
+
+        sw.Stop();
+
+        Log.Debug(GetDebugInfo());
+        Log.Notify($"Loaded all game data in {sw.ElapsedMilliseconds}ms!");
+
+        EventManager.FireEvent("OnLoadGameData");
+    }
 
     private void LoadClientInfo()
     {

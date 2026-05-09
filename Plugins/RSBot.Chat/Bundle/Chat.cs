@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace RSBot.Chat.Bundle;
 
-internal class Chat
+public class Chat
 {
     internal static bool IgnoreChatResponsePacket;
 

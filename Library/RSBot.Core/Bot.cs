@@ -28,6 +28,7 @@ public class Bot
     ///     The base.
     /// </value>
     public IBotbase Botbase { get; private set; }
+    public IBotbaseView BotbaseView { get; private set; }
 
     /// <summary>
     ///     Sets the botbase.
@@ -36,11 +37,14 @@ public class Bot
     public void SetBotbase(IBotbase botBase)
     {
         Botbase = botBase;
-        //Botbase.Initialize();
 
         EventManager.FireEvent("OnSetBotbase", botBase);
     }
-
+    public void SetBotbaseView(IBotbaseView botBaseView)
+    {
+        BotbaseView = botBaseView;
+        EventManager.FireEvent("OnSetBotbaseView", botBaseView);
+    }
     /// <summary>
     ///     Starts this instance.
     /// </summary>
@@ -98,7 +102,7 @@ public class Bot
         Botbase.Stop();
         Running = false;
 
-        Log.Notify($"Stoped bot {Botbase.Name}");
+        Log.Notify($"Stopped bot {Botbase.Name}");
         Log.Status("Bot stopped");
     }
 }

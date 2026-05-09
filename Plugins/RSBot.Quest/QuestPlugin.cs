@@ -10,28 +10,12 @@ namespace RSBot.Quest;
 public class QuestPlugin : IPlugin
 {
     public string InternalName => "RSBot.QuestLog";
-    public string DisplayName => "Quests";
-    public bool DisplayAsTab => false;
-    public int Index => 0;
-    public bool RequireIngame => true;
-
+    public static QuestPlugin Instance { get; private set; }
+    public QuestManager Manager { get; private set; }
     public void Initialize()
     {
-        Views.View.SidebarElement = new QuestSidebarElement();
-
-        EventManager.FireEvent("OnAddSidebarElement", Views.View.SidebarElement);
+        Instance = this;
+        Manager = new QuestManager();
     }
-
-    public Control View => Views.View.Main;
-
-    public void Translate()
-    {
-        LanguageManager.Translate(View, Kernel.Language);
-    }
-
-    /// <inheritdoc />
-    public void OnLoadCharacter()
-    {
-        // do nothing
-    }
+    public void OnLoadCharacter() { }
 }

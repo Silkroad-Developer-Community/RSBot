@@ -10,7 +10,7 @@
     <Copyright>Copyright © 2018-2026 RSBot Team; 2026 Silkroad Developer Community</Copyright>
     <PackageProjectUrl>https://github.com/Silkroad-Developer-Community/RSBot</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Silkroad-Developer-Community/RSBot</RepositoryUrl>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <InformationalVersion>2.10.0</InformationalVersion>
     <AssemblyVersion>2.10.0</AssemblyVersion>

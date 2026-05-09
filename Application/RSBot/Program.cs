@@ -1,18 +1,31 @@
-﻿using System;
-using System.Globalization;
-using System.Reflection;
-using System.Text;
-using System.Windows.Forms;
 using CommandLine;
 using CommandLine.Text;
 using RSBot.Core;
 using RSBot.Core.Components;
+using RSBot.Core.Event;
+using RSBot.Core.Objects;
 using RSBot.Views;
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Windows.Forms;
+using RSBot.Core.Components.Command;
+using System.Runtime.InteropServices;
 
 namespace RSBot;
 
 internal static class Program
 {
+    [DllImport("kernel32.dll")]
+    static extern IntPtr GetConsoleWindow();
+
+    [DllImport("user32.dll")]
+    static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    private const int SW_HIDE = 0;
+    private const int SW_SHOW = 5;
     public static string AssemblyTitle = Assembly
         .GetExecutingAssembly()
         .GetCustomAttribute<AssemblyProductAttribute>()
@@ -39,6 +52,8 @@ internal static class Program
 
         [Option("launch-clientless", Required = false, HelpText = "Start clientless")]
         public bool LaunchClientless { get; set; }
+        [Option("headless", Required = false, HelpText = "Start the bot without graphical user interface")]
+        public bool Headless { get; set; }
     }
 
     private static void DisplayHelp(ParserResult<CommandLineOptions> result)
@@ -66,10 +81,13 @@ internal static class Program
         var parser = new Parser(with => with.HelpWriter = Console.Out);
         var parserResult = parser.ParseArguments<CommandLineOptions>(args);
 
+        bool isHeadless = false;
+
         parserResult
             .WithParsed(options =>
             {
                 RunOptions(options);
+                isHeadless = options.Headless;
             })
             .WithNotParsed(errs =>
             {
@@ -85,17 +103,53 @@ internal static class Program
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-        Application.EnableVisualStyles();
-        Application.SetCompatibleTextRenderingDefault(false);
-        Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+        if (isHeadless)
+        {
+            RunHeadless();
+        }
+        else
+        {
+            var handle = GetConsoleWindow();
+            ShowWindow(handle, SW_HIDE);
 
-        Main mainForm = new Main();
-        SplashScreen splashScreen = new SplashScreen(mainForm);
-        splashScreen.ShowDialog();
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
 
-        Application.Run(mainForm);
+            Main mainForm = new Main();
+            SplashScreen splashScreen = new SplashScreen(mainForm);            
+            splashScreen.ShowDialog();
+
+            Application.Run(mainForm);
+        }
     }
+    private static void RunHeadless()
+    {
+        //Main mainForm = new Main();
+        EventManager.SubscribeEvent("OnAddLog", (string message, LogLevel level) => Console.WriteLine($"[{level}] {message}"));
+        EventManager.SubscribeEvent("OnChangeStatusText", (string status) => Console.WriteLine($"[Status] {status}"));
 
+        BotCL.Initialize(ProfileManager.SelectedProfile);
+
+        bool running = true;
+        while (running)
+        {
+            Console.Write("> ");
+            var input = Console.ReadLine()?.Split(',');
+            if (input == null || input.Length == 0) continue;
+
+            var command = input[0].ToLowerInvariant();
+            var args = input.Skip(1).ToArray();
+
+            if (command == "exit" || command == "quit" || command == "bye")
+            {
+                running = false;
+                continue;
+            }
+
+            CLIManager.Execute(command, args);
+        }
+    }
     private static void RunOptions(CommandLineOptions options)
     {
         if (options.LaunchClient)

@@ -12,8 +12,13 @@ public class StartClientCommand : ICLICommand
 
     public void Execute(string[] args)
     {
-        _ = GeneralPlugin.Instance.Manager.StartClientAsync();
-        Log.Notify("Client started");
+        GeneralPlugin.Instance.Manager.StartClientAsync().ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+                Log.Error($"Failed to start client: {task.Exception?.InnerException?.Message ?? task.Exception?.Message}");
+            else
+                Log.Notify("Client started");
+        });
     }
 }
 

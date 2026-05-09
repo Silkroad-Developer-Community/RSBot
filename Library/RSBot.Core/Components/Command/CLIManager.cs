@@ -12,7 +12,7 @@ public static class CLIManager
     /// <param name="command">The command.</param>
     public static void Register(ICLICommand command)
     {
-        _commands[command.Name.ToLower()] = command;
+        _commands[command.Name.ToLowerInvariant()] = command;
     }
 
     /// <summary>
@@ -22,7 +22,7 @@ public static class CLIManager
     /// <param name="args">The arguments.</param>
     public static void Execute(string commandName, string[] args)
     {
-        if (_commands.TryGetValue(commandName.ToLower(), out var command))
+        if (_commands.TryGetValue(commandName.ToLowerInvariant(), out var command))
         {
             command.Execute(args);
         }

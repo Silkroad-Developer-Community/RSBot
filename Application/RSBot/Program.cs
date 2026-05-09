@@ -138,8 +138,14 @@ internal static class Program
             var input = Console.ReadLine()?.Split(',');
             if (input == null || input.Length == 0) continue;
 
-            var command = input[0].ToLower();
+            var command = input[0].ToLowerInvariant();
             var args = input.Skip(1).ToArray();
+
+            if (command == "exit" || command == "quit" || command == "bye")
+            {
+                running = false;
+                continue;
+            }
 
             CLIManager.Execute(command, args);
         }

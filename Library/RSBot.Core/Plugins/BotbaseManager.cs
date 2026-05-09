@@ -91,18 +91,20 @@ public class BotbaseManager
 
             foreach (var type in types.Where(t => t.IsPublic && !t.IsAbstract))
             {
-                bool isBot = type.GetInterface(nameof(IBotbase)) != null;
-                bool isView = type.GetInterface(nameof(IBotbaseView)) != null;
+                object instance = null;
 
-                if (isBot || isView)
+                if (typeof(IBotbase).IsAssignableFrom(type))
                 {
-                    var instance = Activator.CreateInstance(type);
+                    instance = Activator.CreateInstance(type);
+                    var bot = (IBotbase)instance;
+                    bots[bot.Name] = bot;
+                }
 
-                    if (instance is IBotbase bot)
-                        bots.Add(bot.Name, bot);
-
-                    if (instance is IBotbaseView view)
-                        views.Add(view.Name, view);
+                if (typeof(IBotbaseView).IsAssignableFrom(type))
+                {
+                    instance ??= Activator.CreateInstance(type);
+                    var view = (IBotbaseView)instance;
+                    views[view.Name] = view;
                 }
             }
         }

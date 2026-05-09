@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 using CommandLine.Text;
 using RSBot.Core;
 using RSBot.Core.Components;
@@ -116,10 +116,6 @@ internal static class Program
     {
         //Main mainForm = new Main();
         BotCL.Initialize(ProfileManager.SelectedProfile);
-
-        EventManager.FireEvent("OnLoadPlugins");
-
-        EventManager.FireEvent("OnLoadBotbases");
 
         bool running = true;
         while (running)

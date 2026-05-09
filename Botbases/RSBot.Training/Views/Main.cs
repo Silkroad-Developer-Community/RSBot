@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -29,6 +29,7 @@ public partial class Main : DoubleBufferedControl
     public Main()
     {
         InitializeComponent();
+        InitializeCustomComponents();
         SubscribeEvents();
 
         lvAvoidance.Items[0].Tag = MonsterRarity.General;
@@ -419,5 +420,34 @@ public partial class Main : DoubleBufferedControl
         txtWalkscript.Text = string.Empty;
         PlayerConfig.Set("RSBot.Walkback.File", txtWalkscript.Text);
         btnRemove.Visible = false;
+    }
+
+    /// <summary>
+    ///    Initializes custom components that are not handled by the designer.
+    /// </summary>
+    private void InitializeCustomComponents()
+    {
+        var btnRefetchNavLink = new SDUI.Controls.Button
+        {
+            Text = "Update NavLink",
+            Size = new System.Drawing.Size(110, 23),
+            Location = new System.Drawing.Point(232, 27),
+            Color = System.Drawing.Color.Transparent,
+            Radius = 6,
+            ShadowDepth = 4F
+        };
+
+        btnRefetchNavLink.Click += async (s, e) =>
+        {
+            btnRefetchNavLink.Enabled = false;
+            btnRefetchNavLink.Text = "Updating...";
+
+            await Bot.NavigationManager.FetchRemoteLinkageData();
+
+            btnRefetchNavLink.Text = "Update NavLink";
+            btnRefetchNavLink.Enabled = true;
+        };
+
+        groupBoxWalkback.Controls.Add(btnRefetchNavLink);
     }
 }

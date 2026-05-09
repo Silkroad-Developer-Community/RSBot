@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -218,7 +218,7 @@ public partial class SplashScreen : UIWindow
             return;
         }
 
-        Game.ReferenceManager.Load(GlobalConfig.Get("RSBot.TranslationIndex", 9), referenceDataLoader);
+        Game.ReferenceManager.Load(GlobalConfig.Get("RSBot.TranslationIndex", -1), referenceDataLoader);
     }
 
     private void referenceDataLoader_ProgressChanged(object sender, ProgressChangedEventArgs e)

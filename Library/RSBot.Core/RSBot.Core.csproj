@@ -6,7 +6,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Description>Acts as RSBot Library- includes all neccessary logic that the bot and 3rd party applications require.</Description>
-    <Copyright>Copyright © 2026 Silkroad Developer Community</Copyright>
+    <Copyright>Copyright © 2018-2026 RSBot Team; 2026 Silkroad Developer Community</Copyright>
     <PackageProjectUrl>https://github.com/Silkroad-Developer-Community/RSBot</PackageProjectUrl>
     <PackageReadmeFile></PackageReadmeFile>
     <RepositoryUrl>https://github.com/Silkroad-Developer-Community/RSBot</RepositoryUrl>

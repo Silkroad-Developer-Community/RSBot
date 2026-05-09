@@ -1,49 +1,50 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <OutputPath>.\..\..\Build\Data\Plugins</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Description>A open source bot for Silkroad Online</Description>
+    <Copyright>Copyright © 2026 Silkroad Developer Community</Copyright>
+    <PackageProjectUrl>https://github.com/Silkroad-Developer-Community/RSBot</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Silkroad-Developer-Community/RSBot</RepositoryUrl>
+    <OutputType>Library</OutputType>
+    <PythonVersion>3.13.11</PythonVersion>
+    <PythonRuntimeDir>$(OutputPath)\..\Python\PyRuntime\</PythonRuntimeDir>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<TargetFramework>net8.0-windows</TargetFramework>
-		<Nullable>disable</Nullable>
-		<UseWindowsForms>true</UseWindowsForms>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<OutputPath>.\..\..\Build\Data\Plugins</OutputPath>
-		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-		<Description>A open source bot for Silkroad Online</Description>
-		<Copyright>Copyright © 2026 Silkroad Developer Community</Copyright>
-		<PackageProjectUrl>https://github.com/Silkroad-Developer-Community/RSBot</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/Silkroad-Developer-Community/RSBot</RepositoryUrl>
-		<OutputType>Library</OutputType>
-		<PythonVersion>3.13.11</PythonVersion>
-		<PythonRuntimeDir>$(OutputPath)\..\Python\PyRuntime\</PythonRuntimeDir>
-	</PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Components\API\Core\Chat\**" />
+    <EmbeddedResource Remove="Components\API\Core\Chat\**" />
+    <None Remove="Components\API\Core\Chat\**" />
+  </ItemGroup>
 
-	<ItemGroup>
-	  <Compile Remove="Components\API\Core\Chat\**" />
-	  <EmbeddedResource Remove="Components\API\Core\Chat\**" />
-	  <None Remove="Components\API\Core\Chat\**" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="pythonnet" Version="3.0.5" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="pythonnet" Version="3.0.5" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Botbases\RSBot.Training\RSBot.Training.csproj" />
+    <ProjectReference Include="..\..\Library\RSBot.Core\RSBot.Core.csproj" />
+    <ProjectReference Include="..\..\SDUI\SDUI\SDUI.csproj" />
+    <ProjectReference Include="..\RSBot.General\RSBot.General.csproj" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\Botbases\RSBot.Training\RSBot.Training.csproj" />
-		<ProjectReference Include="..\..\Library\RSBot.Core\RSBot.Core.csproj" />
-		<ProjectReference Include="..\..\SDUI\SDUI\SDUI.csproj" />
-		<ProjectReference Include="..\RSBot.General\RSBot.General.csproj" />
-	</ItemGroup>
+  <Target Name="DownloadPythonRuntime" BeforeTargets="Build">
+    <PropertyGroup>
+      <!-- Path to the python runtime directory (trimmed to avoid shell escaping issues) -->
+      <PythonRuntimeDirFull>$([System.IO.Path]::GetFullPath('$(PythonRuntimeDir)').TrimEnd('\'))</PythonRuntimeDirFull>
+    </PropertyGroup>
 
-	<Target Name="DownloadPythonRuntime" BeforeTargets="Build">
-		<PropertyGroup>
-			<!-- Path to the python runtime directory (trimmed to avoid shell escaping issues) -->
-			<PythonRuntimeDirFull>$([System.IO.Path]::GetFullPath('$(PythonRuntimeDir)').TrimEnd('\'))</PythonRuntimeDirFull>
-		</PropertyGroup>
+    <Message
+      Importance="high"
+      Text="[Python-Build] Looking for PythonRuntime at: $(PythonRuntimeDirFull)"
+    />
 
-		<Message Importance="high" Text="[Python-Build] Looking for PythonRuntime at: $(PythonRuntimeDirFull)" />
+    <Exec Command="powershell -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\..\scripts\download_python.ps1&quot; -PythonVersion &quot;$(PythonVersion)&quot; -DestinationPath &quot;$(PythonRuntimeDirFull)&quot;" />
 
-		<Exec Command="powershell -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\..\scripts\download_python.ps1&quot; -PythonVersion &quot;$(PythonVersion)&quot; -DestinationPath &quot;$(PythonRuntimeDirFull)&quot;" />
-
-		<Message Importance="high" Text="[Python-Build] Python Check/Installation process finished." />
-	</Target>
-
+    <Message Importance="high" Text="[Python-Build] Python Check/Installation process finished." />
+  </Target>
 </Project>

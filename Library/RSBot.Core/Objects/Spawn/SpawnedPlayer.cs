@@ -285,7 +285,7 @@ public sealed class SpawnedPlayer : SpawnedBionic
         Name = packet.ReadString();
         Job = (JobType)packet.ReadByte();
 
-        if (Game.ClientType >= GameClientType.Chinese_Old && WearsJobSuite)
+        if (Game.ClientType >= GameClientType.Vietnam274 && WearsJobSuite)
             if (WearsJobSuite)
             {
                 packet.ReadByte(); // JobRank
@@ -293,7 +293,7 @@ public sealed class SpawnedPlayer : SpawnedBionic
                 packet.ReadByte(); // ??
             }
 
-        if (Game.ClientType < GameClientType.Chinese_Old)
+        if (Game.ClientType < GameClientType.Vietnam274)
         {
             JobLevel = packet.ReadByte();
             PvpState = (PvpState)packet.ReadByte();
@@ -308,7 +308,7 @@ public sealed class SpawnedPlayer : SpawnedBionic
         ScrollMode = (ScrollMode)packet.ReadByte();
         InteractMode = (InteractMode)packet.ReadByte();
 
-        if (Game.ClientType < GameClientType.Chinese_Old)
+        if (Game.ClientType < GameClientType.Vietnam274)
             packet.ReadByte(); //unkByte4
 
         var guildName = packet.ReadString();

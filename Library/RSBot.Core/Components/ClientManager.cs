@@ -24,17 +24,6 @@ public class ClientManager
     /// </summary>
     public static bool IsRunning => _process != null && !_process.HasExited;
 
-    private static string GetSignature(GameClientType type)
-    {
-        return type switch
-        {
-            GameClientType.Turkey => "6A 00 68 78 18 43 01 68 8C 18 43 01",
-            GameClientType.VTC_Game => "6A 00 68 F8 91 3F 01 68 0C 92 3F 01",
-            GameClientType.Taiwan => "6A 00 68 30 58 43 01 68 44 58 43 01",
-            _ => throw new ArgumentOutOfRangeException(nameof(type)),
-        };
-    }
-
     /// <summary>
     ///     Start the game client
     /// </summary>
@@ -226,10 +215,13 @@ public class ClientManager
     }
 
     /// <summary>
-    /// Applies an in-memory patch to the XIGNCODE module of the specified process.
+    /// Applies a universal in-memory patch to bypass XIGNCODE in the specified process.
+    /// Algorithm:
+    ///   1. Find standalone Unicode "XIGNCODE\0" string in module memory
+    ///   2. Locate the init call pattern: push 0; push "XIGNCODE"; push code_string; call SysEnter
+    ///   3. Resolve XignCode_SysEnter and XignCode_SendCommand function addresses
+    ///   4. Patch both functions to return 1 immediately
     /// </summary>
-    /// <param name="process">The target process to which the XIGNCODE patch will be applied. Must be running and accessible.</param>
-    /// <param name="pi">The process information structure containing handles and thread information for the target process.</param>
     private static void ApplyXigncodePatch(Process process, PROCESS_INFORMATION pi)
     {
         var moduleMemory = new byte[process.MainModule.ModuleMemorySize];
@@ -241,25 +233,120 @@ public class ClientManager
             out _
         );
 
-        var patchNop = new byte[] { 0x90, 0x90 };
-        var patchNop2 = new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
-        var patchJmp = new byte[] { 0xEB };
-
-        string signature = GetSignature(Game.ClientType);
-
         int baseAddress = process.MainModule.BaseAddress.ToInt32();
-        var address = FindPattern(signature, moduleMemory, baseAddress);
-        if (address == IntPtr.Zero)
+
+        byte[] xigncodeUtf16 = Encoding.Unicode.GetBytes("XIGNCODE\0");
+        int anchorOffset = FindXigncodeAnchor(moduleMemory, xigncodeUtf16, baseAddress);
+        if (anchorOffset == -1)
         {
-            Log.Error("XIGNCODE patching error! Maybe signatures are wrong?");
+            Log.Error("XIGNCODE patching error! Could not find XIGNCODE init pattern.");
+            return;
         }
 
-        WriteProcessMemory(pi.hProcess, address - 0x6F, patchJmp, 1, out _);
-        WriteProcessMemory(pi.hProcess, address + 0x13, patchJmp, 1, out _);
-        WriteProcessMemory(pi.hProcess, address + 0xC, patchNop2, 5, out _);
-        WriteProcessMemory(pi.hProcess, address + 0x95, patchJmp, 1, out _);
-        
+        int sysEnterRelative = BitConverter.ToInt32(moduleMemory, anchorOffset + 13);
+        int sysEnterOffset = anchorOffset + 17 + sysEnterRelative;
+        if (sysEnterOffset < 0 || sysEnterOffset >= moduleMemory.Length)
+        {
+            Log.Error("XIGNCODE patching error! Invalid SysEnter function address.");
+            return;
+        }
+
+        IntPtr sysEnterAddr = (IntPtr)(baseAddress + sysEnterOffset);
+
+        IntPtr sendCommandAddr = IntPtr.Zero;
+        int searchEnd = Math.Min(sysEnterOffset + 0x500, moduleMemory.Length - 10);
+        var callTargetCounts = new System.Collections.Generic.Dictionary<int, int>();
+        for (int i = sysEnterOffset; i < searchEnd; i++)
+        {
+            if (moduleMemory[i] == 0xE8 &&
+                moduleMemory[i + 5] == 0x83 &&
+                moduleMemory[i + 6] == 0xC4 &&
+                moduleMemory[i + 7] == 0x0C)
+            {
+                int rel = BitConverter.ToInt32(moduleMemory, i + 1);
+                int targetOffset = i + 5 + rel;
+                if (targetOffset >= 0 && targetOffset < moduleMemory.Length)
+                {
+                    callTargetCounts.TryGetValue(targetOffset, out int count);
+                    callTargetCounts[targetOffset] = count + 1;
+                }
+            }
+        }
+
+        // Other cdecl functions (e.g. memset) may also match this pattern,
+        // so we collect all call targets and pick the most frequently called one.
+        if (callTargetCounts.Count > 0)
+        {
+            int mostCalledOffset = callTargetCounts.OrderByDescending(kvp => kvp.Value).First().Key;
+            sendCommandAddr = (IntPtr)(baseAddress + mostCalledOffset);
+        }
+
+        byte[] patchSysEnter = { 0xB8, 0x01, 0x00, 0x00, 0x00, 0xC2, 0x0C, 0x00 };
+        PatchProcessMemory(pi.hProcess, sysEnterAddr, patchSysEnter);
+
+        if (sendCommandAddr != IntPtr.Zero)
+        {
+            byte[] patchSendCmd = { 0xB8, 0x01, 0x00, 0x00, 0x00, 0xC3 };
+            PatchProcessMemory(pi.hProcess, sendCommandAddr, patchSendCmd);
+        }
+        else
+        {
+            Log.Warn("XIGNCODE: Could not find SendCommand function, only SysEnter was patched.");
+        }
+
         GC.Collect();
+    }
+
+    /// <summary>
+    /// Finds the XIGNCODE init call anchor in WinMain by locating the standalone "XIGNCODE" Unicode
+    /// string and its reference in the code pattern: push 0; push VA("XIGNCODE"); push code_string; call func.
+    /// </summary>
+    /// <returns>Offset in the buffer where the anchor pattern starts, or -1 if not found.</returns>
+    private static int FindXigncodeAnchor(byte[] memory, byte[] xigncodeUtf16, int baseAddress)
+    {
+        for (int strIdx = 0; strIdx <= memory.Length - xigncodeUtf16.Length; strIdx++)
+        {
+            bool strMatch = true;
+            for (int j = 0; j < xigncodeUtf16.Length; j++)
+            {
+                if (memory[strIdx + j] != xigncodeUtf16[j])
+                {
+                    strMatch = false;
+                    break;
+                }
+            }
+
+            if (!strMatch)
+                continue;
+
+            byte[] vaBytes = BitConverter.GetBytes(baseAddress + strIdx);
+
+            for (int ci = 0; ci <= memory.Length - 18; ci++)
+            {
+                if (memory[ci] == 0x6A && memory[ci + 1] == 0x00 &&
+                    memory[ci + 2] == 0x68 &&
+                    memory[ci + 3] == vaBytes[0] && memory[ci + 4] == vaBytes[1] &&
+                    memory[ci + 5] == vaBytes[2] && memory[ci + 6] == vaBytes[3] &&
+                    memory[ci + 7] == 0x68 &&
+                    memory[ci + 12] == 0xE8)
+                {
+                    return ci;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// Writes a byte patch to the specified address in a remote process, temporarily
+    /// changing memory protection to PAGE_EXECUTE_READWRITE.
+    /// </summary>
+    private static void PatchProcessMemory(IntPtr processHandle, IntPtr address, byte[] patch)
+    {
+        VirtualProtectEx(processHandle, address, (UIntPtr)patch.Length, 0x40, out uint oldProtect);
+        WriteProcessMemory(processHandle, address, patch, (uint)patch.Length, out _);
+        VirtualProtectEx(processHandle, address, (UIntPtr)patch.Length, oldProtect, out _);
     }
 
     /// <summary>

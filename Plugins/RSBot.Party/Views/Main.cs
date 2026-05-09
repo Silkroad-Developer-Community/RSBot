@@ -602,6 +602,7 @@ public partial class Main : DoubleBufferedControl
         menuLeave.Enabled = false;
         lblLeader.Text = LanguageManager.GetLang("NotInParty");
         listParty.Items.Clear();
+        Game.Party?.Clear();
         Log.NotifyLang("PartyDismissed");
         OnDeletePartyEntry();
     }

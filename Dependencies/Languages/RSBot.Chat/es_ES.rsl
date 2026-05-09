@@ -1,4 +1,4 @@
-DisplayName="Chat"
+DisplayName="Charlar"
 RSBot.Chat.Main.TabControl.tabAll="Todo"
 RSBot.Chat.Main.TabControl.tabPrivate="Privado"
 RSBot.Chat.Main.TabControl.tabParty="Grupo"

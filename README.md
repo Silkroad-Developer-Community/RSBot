@@ -57,3 +57,7 @@ Run the commands below (You still need MSBuild tooling via Visual Studio):
 | Vietnam         | VTC Game                      |
 | ~~Chinese Old~~ | ~~MHTC~~                      |
 | ~~Japanese-R~~  |                               |
+
+## Credits
+
+RSBot was originally developed by [**ngoedde**](https://github.com/ngoedde) (Niklas Gödde/torstmn/Wimbeam) and [**SDClowen**](https://github.com/myildirimofficial) (Mahmut YILDIRIM). This repository is a community-led fork maintained by the Silkroad Developer Community.

@@ -1,4 +1,4 @@
-﻿namespace RSBot.Views
+namespace RSBot.Views
 {
     partial class Updater
     {
@@ -42,7 +42,8 @@
             // 
             // rtbUpdateInfo
             // 
-            this.rtbUpdateInfo.BackColor = System.Drawing.Color.White;
+            this.rtbUpdateInfo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.rtbUpdateInfo.ForeColor = System.Drawing.Color.White;
             this.rtbUpdateInfo.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.rtbUpdateInfo.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.rtbUpdateInfo.Location = new System.Drawing.Point(0, 38);
@@ -57,8 +58,8 @@
             // lblInfo
             // 
             this.lblInfo.AutoSize = true;
-            this.lblInfo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.lblInfo.Location = new System.Drawing.Point(8, 8);
+            this.lblInfo.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblInfo.Location = new System.Drawing.Point(10, 42);
             this.lblInfo.Name = "lblInfo";
             this.lblInfo.Size = new System.Drawing.Size(404, 21);
             this.lblInfo.TabIndex = 1;
@@ -116,7 +117,7 @@
             this.centerPanel.Controls.Add(this.btnDownload);
             this.centerPanel.Controls.Add(this.cbChangeLog);
             this.centerPanel.Controls.Add(this.label2);
-            this.centerPanel.Location = new System.Drawing.Point(7, 39);
+            this.centerPanel.Location = new System.Drawing.Point(7, 72);
             this.centerPanel.Name = "centerPanel";
             this.centerPanel.Size = new System.Drawing.Size(430, 305);
             this.centerPanel.TabIndex = 5;
@@ -143,9 +144,9 @@
             this.AcceptButton = this.btnDownload;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.White;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(32)))), ((int)(((byte)(32)))));
             this.CancelButton = this.btnSkip;
-            this.ClientSize = new System.Drawing.Size(445, 72);
+            this.ClientSize = new System.Drawing.Size(445, 110);
             this.ControlBox = false;
             this.Controls.Add(this.downloadProgress);
             this.Controls.Add(this.lblDownloadInfo);
@@ -156,12 +157,13 @@
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(451, 351);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(451, 78);
+            this.MinimumSize = new System.Drawing.Size(451, 110);
             this.Name = "Updater";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "Update available";
             this.centerPanel.ResumeLayout(false);
             this.centerPanel.PerformLayout();
             this.ResumeLayout(false);

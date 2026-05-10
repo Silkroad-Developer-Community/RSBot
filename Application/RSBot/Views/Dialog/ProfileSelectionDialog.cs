@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using RSBot.Core.Components;
 using SDUI;
@@ -31,8 +32,7 @@ public partial class ProfileSelectionDialog : UIWindowBase
     private void LoadProfiles()
     {
         comboProfiles.Items.Clear();
-        if (!ProfileManager.Any())
-            ProfileManager.Add("Default");
+        // ProfileManager now ensures "Default" exists
 
         comboProfiles.Items.AddRange(ProfileManager.Profiles);
         comboProfiles.SelectedItem = ProfileManager.SelectedProfile;
@@ -70,9 +70,23 @@ public partial class ProfileSelectionDialog : UIWindowBase
             return string.Empty;
         }
 
-        ProfileManager.Add(profile, true);
+        string[] reservedNames = { "Profiles", "Default", "Settings" };
+        if (reservedNames.Any(n => n.Equals(profile, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            MessageBox.Show(
+                $"The name '{profile}' is reserved and cannot be used!",
+                "Reserved name",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
 
-        return profile;
+            return string.Empty;
+        }
+
+        if (ProfileManager.Add(profile, false))
+            return profile;
+
+        return string.Empty;
     }
 
     #endregion Methods
@@ -94,7 +108,8 @@ public partial class ProfileSelectionDialog : UIWindowBase
 
     private void buttonDeleteProfile_Click(object sender, EventArgs e)
     {
-        if (comboProfiles.SelectedIndex == 0) //Default
+        var selectedProfile = (string)comboProfiles.SelectedItem;
+        if (selectedProfile == "Default") //Default
         {
             MessageBox.Show(
                 "You can not delete the default profile!",

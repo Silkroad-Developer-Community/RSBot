@@ -2,19 +2,99 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build",
+      "label": "Build (Debug)",
+      "detail": "Build RSBot in Debug configuration",
+      "icon": { "id": "beaker", "color": "terminal.ansiGreen" },
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/build.ps1",
+        "-Configuration",
+        "Debug",
+        "-DoNotStart"
+      ],
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Build (Release)",
+      "detail": "Build RSBot in Release configuration",
+      "icon": { "id": "package", "color": "terminal.ansiYellow" },
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/build.ps1",
+        "-Configuration",
+        "Release",
+        "-DoNotStart"
+      ],
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Build & Run",
+      "detail": "Build and start RSBot",
+      "icon": { "id": "play", "color": "terminal.ansiGreen" },
       "type": "shell",
       "command": "powershell",
       "args": ["-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/build.ps1"],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Clean Build",
+      "detail": "Perform a clean build",
+      "icon": { "id": "trash", "color": "terminal.ansiRed" },
+      "type": "shell",
+      "command": "powershell",
+      "args": ["-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/build.ps1", "-Clean", "-DoNotStart"],
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Run Mock Updater",
+      "detail": "Start the mock update server for testing",
+      "icon": { "id": "server", "color": "terminal.ansiBlue" },
+      "type": "shell",
+      "command": "python",
+      "args": ["${workspaceFolder}/scripts/mock_updater.py"],
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "new" }
+    },
+    {
+      "label": "Launch RSBot",
+      "detail": "Run the already built RSBot.exe",
+      "icon": { "id": "rocket", "color": "terminal.ansiCyan" },
+      "type": "shell",
+      "command": ".\\Build\\RSBot.exe",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Launch Setup",
+      "detail": "Run the latest generated installer",
+      "icon": { "id": "play", "color": "terminal.ansiMagenta" },
+      "type": "shell",
+      "command": "Get-ChildItem 'RSBot-Setup-*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | ForEach-Object { Invoke-Item $_.FullName }",
+      "group": { "kind": "test" }
+    },
+    {
+      "label": "Build Setup",
+      "detail": "Compile the Inno Setup installer",
+      "icon": { "id": "tools", "color": "terminal.ansiMagenta" },
+      "type": "shell",
+      "command": "& 'C:\\Users\\ez\\AppData\\Local\\Programs\\Inno Setup 6\\ISCC.exe' scripts\\RSBot.iss",
+      "group": "build"
     }
   ]
 }

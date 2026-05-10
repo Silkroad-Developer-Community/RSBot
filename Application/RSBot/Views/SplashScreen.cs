@@ -38,7 +38,7 @@ public partial class SplashScreen : UIWindow
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    private void SplashScreen_Load(object sender, EventArgs e)
+    private async void SplashScreen_Load(object sender, EventArgs e)
     {
         if (!LoadProfileConfig())
         {
@@ -46,9 +46,15 @@ public partial class SplashScreen : UIWindow
             return;
         }
 
-        Kernel.Language = GlobalConfig.Get("RSBot.Language", "en_US");
+        Kernel.Language = GeneralConfig.Get("RSBot.Language", "en_US");
 
         LanguageManager.Translate(_mainForm, Kernel.Language);
+
+        var updater = new Updater();
+        if (await updater.Check())
+        {
+            updater.ShowDialog();
+        }
 
         if (
             !GlobalConfig.Exists("RSBot.SilkroadDirectory")
@@ -115,7 +121,7 @@ public partial class SplashScreen : UIWindow
     /// </param>
     private void ReferenceDataLoaderCompleted(object sender, RunWorkerCompletedEventArgs e)
     {
-        var detectDarkLight = GlobalConfig.Get("RSBot.Theme.Auto", true);
+        var detectDarkLight = GeneralConfig.Get("RSBot.Theme.Auto", true);
         if (detectDarkLight)
         {
             if (WindowsHelper.IsDark())
@@ -161,6 +167,7 @@ public partial class SplashScreen : UIWindow
             }
         }
 
+        GeneralConfig.Load();
         GlobalConfig.Load();
         Log.Notify($"Loaded profile {ProfileManager.SelectedProfile}");
 
